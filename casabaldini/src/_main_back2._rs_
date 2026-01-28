@@ -1,0 +1,99 @@
+#![allow(non_snake_case)]
+use dioxus::prelude::*;
+use serde::{Deserialize, Serialize};
+use dioxus::document::eval;
+
+ // <--- AGGIUNGI QUESTA RIGA
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, sqlx::FromRow)] // <--- Aggiungi sqlx::FromRow qui
+
+pub struct Slider {
+    pub id: i32,
+    pub img: String,
+    pub titolo: String,
+    pub caption: String,
+    pub testo: String,
+}
+// In cima al main.rs, sotto gli import
+const SLIDER_CSS: Asset = asset!("/assets/home/dist/css/slider-pro.min.css");
+const EXAMPLES_CSS: Asset = asset!("/assets/home/dist/css/examples.css");
+const SLIDER_JS: Asset = asset!("/assets/home/dist/js/jquery.sliderPro.min.js");
+const IMG_SVG: Asset = asset!("/assets/img/index/cafaggiolo.jpg");
+const HEADER_SVG: Asset = asset!("/assets/header.svg");
+fn main() {
+    dioxus_logger::init(tracing::Level::INFO).expect("failed to init logger");
+    // Usiamo il launch semplice che nel progetto 'test' funziona
+    dioxus::launch(App);
+}
+
+
+#[component]
+pub fn App() -> Element {
+    let sliders = use_server_future(get_sliders)?;
+    rsx! {
+        // Usiamo la stessa logica di 'test'
+        document::Link { rel: "stylesheet", href: SLIDER_CSS }
+        document::Link { rel: "stylesheet", href: EXAMPLES_CSS }
+        // jQuery lo carichiamo da CDN come avevi fatto
+        document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
+        document::Script { src: SLIDER_JS }
+
+        div { class: "container",
+            match sliders.value()() {
+                Some(Ok(sliders)) => {
+                    // Questa riga dice al browser: "Appena hai finito di disegnare, attiva lo slider"
+                    eval("
+                        setTimeout(function() {
+                            $('#example1').sliderPro({
+                                width: 960,
+                                height: 500,
+                                arrows: true,
+                                buttons: false,
+                                waitForLayers: true,
+                                thumbnailPointer: true,
+                                autoplay: true,
+                                autoScaleLayers: false
+                            });
+                        }, 100);
+                    ");
+
+                    rsx! {
+                        div { id: "example1", class: "slider-pro",
+                            div { class: "sp-slides",
+                                for s in sliders {
+                                    div { class: "sp-slide",
+                                        //img { 
+                                            //class: "sp-image", 
+                                            //src: asset!("/assets/img/index/{s.img}"),
+                                            img { src: HEADER_SVG, id: "header" }
+                                            //alt: "{s.titolo}" 
+                                        //}
+                                        h3 { class: "sp-layer sp-black sp-padding", "{s.titolo}" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                Some(Err(e)) => rsx! { "Errore: {e}" },
+                None => rsx! { "Caricamento..." }
+            }
+        }
+        
+    }
+}
+
+#[server]
+pub async fn get_sliders() -> Result<Vec<Slider>, ServerFnError> {
+    use sqlx::SqlitePool;
+    
+    let pool = SqlitePool::connect("sqlite:casabaldini.sqlite").await
+        .map_err(|e| ServerFnError::new(&format!("DB Connection Error: {}", e)))?;
+    
+    // Rimuoviamo il "!" da query_as per evitare il controllo a tempo di compilazione
+    let res = sqlx::query_as::<_, Slider>("SELECT id, img, titolo, caption, testo FROM sliders")
+        .fetch_all(&pool)
+        .await
+        .map_err(|e| ServerFnError::new(&format!("Query Error: {}", e)))?;
+
+    Ok(res)
+}

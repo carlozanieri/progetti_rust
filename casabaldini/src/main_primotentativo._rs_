@@ -1,0 +1,85 @@
+#![allow(non_snake_case)]
+
+use dioxus::prelude::*;
+use serde::{Deserialize, Serialize};
+use sqlx::SqlitePool;
+use tower_http::services::ServeDir;
+
+/* ---------- DATA STRUCT ---------- */
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, sqlx::FromRow)]
+pub struct Slider {
+    pub id: i32,
+    pub img: String,
+    pub titolo: String,
+    pub caption: String,
+    pub testo: String,
+}
+
+/* ---------- STATIC ASSETS ---------- */
+const SLIDER_CSS: Asset = asset!("/assets/home/dist/css/slider-pro.min.css");
+const EXAMPLES_CSS: Asset = asset!("/assets/home/dist/css/examples.css");
+const SLIDER_JS: Asset = asset!("/assets/home/dist/js/jquery.sliderPro.min.js");
+const FAVICON: Asset = asset!("/assets/favicon.ico");
+const MAIN_CSS: Asset = asset!("/assets/main.css");
+const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
+
+/* ---------- MAIN SERVER ---------- */
+fn main() {
+    dioxus::launch(App);
+}
+
+/* ---------- APP COMPONENT ---------- */
+#[component]
+pub fn App() -> Element {
+    let sliders = use_server_future(get_sliders)?;
+
+    rsx! {
+        // CSS e JS globali
+        document::Link { rel: "icon", href: FAVICON }
+        document::Link { rel: "stylesheet", href: MAIN_CSS }
+        document::Link { rel: "stylesheet", href: TAILWIND_CSS }
+        document::Link { rel: "stylesheet", href: SLIDER_CSS }
+        document::Link { rel: "stylesheet", href: EXAMPLES_CSS }
+        document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
+        document::Script { src: SLIDER_JS }
+
+        div { class: "container",
+            match sliders.value()() {
+                Some(Ok(sliders)) => rsx! {
+                    for s in sliders {
+                        div { class: "container-immagine",
+                            h3 { "{s.titolo}" }
+                            img {
+                                src: format!("/assets/img/index/{}", s.img),
+                                width: "400px"
+                            }
+                            p { "{s.testo}" }
+                        }
+                    }
+                },
+                Some(Err(e)) => rsx! { "Errore caricamento: {e}" },
+                None => rsx! { "Caricamento dati..." }
+            }
+        }
+    }
+}
+
+/* ---------- SERVER FUNCTION ---------- */
+#[server]
+pub async fn get_sliders() -> Result<Vec<Slider>, ServerFnError> {
+    // Import locale per evitare warning
+    use sqlx::SqlitePool;
+
+    let pool = SqlitePool::connect("sqlite:casabaldini.sqlite")
+        .await
+        .map_err(|e| ServerFnError::new(format!("DB Connection Error: {}", e)))?;
+
+    let sliders = sqlx::query_as::<_, Slider>(
+        "SELECT id, img, titolo, caption, testo FROM sliders"
+    )
+    .fetch_all(&pool)
+    .await
+    .map_err(|e| ServerFnError::new(format!("Query Error: {}", e)))?;
+
+    Ok(sliders)
+}
