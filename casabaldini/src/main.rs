@@ -14,6 +14,8 @@ pub struct Slider {
 }
 
 fn main() {
+    // Non aggiungere configurazioni Axum manuali per ora.
+    // Lasciamo che LaunchBuilder faccia tutto da solo.
     LaunchBuilder::new().launch(App);
 }
 
@@ -45,8 +47,9 @@ fn App() -> Element {
 #[component]
 fn ElencoSliders() -> Element {
     let mut sliders_res = use_resource(move || get_sliders_test());
-
+    let mut count = use_signal(|| 0);
     rsx! {
+        button { onclick: move |_| count += 1, "Click test: {count}" }
         match &*sliders_res.read_unchecked() {
             Some(Ok(list)) => rsx! {
                 div { style: "display: flex;",
