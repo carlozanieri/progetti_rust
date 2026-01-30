@@ -29,12 +29,12 @@ pub struct Slider {
 fn main() {
     #[cfg(feature = "server")]
     {
-        // Usiamo i percorsi semplificati che suggerisce il compilatore
+        // Usiamo solo ciò che serve davvero
         use dioxus::prelude::*;
 
         LaunchBuilder::new()
-            // Se Config ti dà ancora errore, rimuovi .with_cfg per ora 
-            // e lascia che Dioxus usi le porte di default (8080)
+            // Rimuoviamo il .with_cfg problematico. 
+            // Dioxus userà le impostazioni di default (porta 8080)
             .launch(App);
     }
 
@@ -192,7 +192,7 @@ pub async fn get_sliders_test() -> Result<Vec<Slider>, ServerFnError> {
             id: 1,
             titolo: "Vista dal Server".to_string(),
             // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: "/assets/img/index/sea.jpg".to_string(), 
+            immagine_url: "/libera/test.jpg".to_string(), 
         },
         Slider {
             id: 1,
