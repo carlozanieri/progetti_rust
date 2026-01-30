@@ -27,18 +27,6 @@ pub struct Slider {
     pub immagine_url: String,
 }
 fn main() {
-    #[cfg(feature = "server")]
-    {
-        // Usiamo i percorsi semplificati che suggerisce il compilatore
-        use dioxus::prelude::*;
-
-        LaunchBuilder::new()
-            // Se Config ti dà ancora errore, rimuovi .with_cfg per ora 
-            // e lascia che Dioxus usi le porte di default (8080)
-            .launch(App);
-    }
-
-    #[cfg(not(feature = "server"))]
     dioxus::launch(App);
 }
 
@@ -219,17 +207,6 @@ pub async fn get_sliders_test() -> Result<Vec<Slider>, ServerFnError> {
             // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
             immagine_url: asset!("/assets/img/index/loggemedicee.jpg").to_string(), 
         }
-    ])
-}
-
-pub async fn get_sliders_test_2() -> Result<Vec<Slider>, ServerFnError> {
-    Ok(vec![
-        Slider {
-            id: 1,
-            titolo: "Immagine Dinamica (Senza Hash)".to_string(),
-            // Usiamo il prefisso '/foto' che abbiamo creato nel server
-            immagine_url: "/foto/lago.jpg".to_string(), 
-        },
     ])
 }
 /// Echo the user input on the server.

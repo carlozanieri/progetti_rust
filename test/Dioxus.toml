@@ -1,5 +1,5 @@
 [application]
-
+asset_dir = "assets"
 [web.app]
 
 # HTML title tag content
@@ -7,7 +7,7 @@ title = "test"
 
 # include `assets` in web platform
 [web.resource]
-
+include = ["assets"]
 # Additional CSS style files
 style = []
 
