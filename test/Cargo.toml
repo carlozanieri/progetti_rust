@@ -9,7 +9,7 @@ edition = "2021"
 [dependencies]
 dioxus = { version = "0.7.3", features = ["router", "fullstack"] }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-axum = "=0.7"
+axum = "=0.8"
 tower-http = { version = "0.6.8", features = ["fs"] }
 [features]
 default = ["web"]

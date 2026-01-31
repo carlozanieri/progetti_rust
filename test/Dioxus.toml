@@ -1,5 +1,6 @@
 [application]
 asset_dir = "assets"
+static_dir = "public"
 [web.app]
 
 # HTML title tag content

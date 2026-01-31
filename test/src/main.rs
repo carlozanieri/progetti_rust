@@ -27,18 +27,7 @@ pub struct Slider {
     pub immagine_url: String,
 }
 fn main() {
-    #[cfg(feature = "server")]
-    {
-        // Usiamo solo ciò che serve davvero
-        use dioxus::prelude::*;
-
-        LaunchBuilder::new()
-            // Rimuoviamo il .with_cfg problematico. 
-            // Dioxus userà le impostazioni di default (porta 8080)
-            .launch(App);
-    }
-
-    #[cfg(not(feature = "server"))]
+    // Questo è il modo più pulito in 0.7 per far funzionare tutto
     dioxus::launch(App);
 }
 
@@ -217,8 +206,17 @@ pub async fn get_sliders_test() -> Result<Vec<Slider>, ServerFnError> {
             id: 1,
             titolo: "Vista dal Server".to_string(),
             // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: asset!("/assets/img/index/loggemedicee.jpg").to_string(), 
-        }
+            immagine_url: asset!("/assets/img/index/loggemedicee.jpg").to_string(),
+         
+        },
+        // ... dentro get_sliders_test ...
+        Slider {
+            id: 99,
+            titolo: "Test Diretto (Django-style)".to_string(),
+            // Usiamo il percorso relativo che il server dovrebbe servire 
+            // pescando direttamente dalla cartella assets
+            immagine_url: "/public/lago_test.jpg".to_string(), 
+        },
     ])
 }
 
