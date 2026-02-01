@@ -173,143 +173,14 @@ fn Casabaldini() -> Element {
     }
 }
 
-pub async fn get_sliders_test_orig() -> Result<Vec<Slider>, ServerFnError> {
-    Ok(vec![
-        Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: LAGO_IMG.to_string(), 
-        },
-         Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: "/libera/test.jpg".to_string(), 
-        },
-        Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: asset!("/assets/img/index/lagobilancino.jpg").to_string(), 
-
-        },
-        Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: asset!("/assets/img/index/lagobilancinovela.jpg").to_string(), 
-        },
-        Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: asset!("/assets/img/index/lagobilancinovela.jpg").to_string(), 
-        },
-        Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: asset!("/assets/img/index/loggemedicee.jpg").to_string(),
-         
-        },
-        // ... dentro get_sliders_test ...
-        Slider {
-            id: 99,
-            titolo: "Test Diretto (Django-style)".to_string(),
-            // Usiamo il percorso relativo che il server dovrebbe servire 
-            // pescando direttamente dalla cartella assets
-            immagine_url: "/public/lago_test.jpg".to_string(), 
-        },
-    ])
-}
-
-pub async fn get_sliders_test_2() -> Result<Vec<Slider>, ServerFnError> {
-    Ok(vec![
-        Slider {
-            id: 1,
-            titolo: "Immagine Dinamica (Senza Hash)".to_string(),
-            // Usiamo il prefisso '/foto' che abbiamo creato nel server
-            immagine_url: "/foto/lago.jpg".to_string(), 
-        },
-    ])
-}
 /// Echo the user input on the server.
 #[post("/api/echo")]
 async fn echo_server(input: String) -> Result<String, ServerFnError> {
     Ok(input)
 }
-// 1. IL COMPONENTE (Client)
-#[component]
-fn GalleriaDinamica() -> Element {
-    // Usiamo un resource per chiamare la funzione server
-    let sliders = use_resource(move || get_sliders_test());
 
-    match &*sliders.read_unchecked() {
-        Some(Ok(list)) => rsx! {
-            for s in list {
-                div {
-                    h3 { "{s.titolo}" }
-                    img { src: "{s.immagine_url}", width: "400" }
-                }
-            }
-        },
-        _ => rsx! { "Caricamento dati dal server..." }
-    }
-}
 
 // 2. LA FUNZIONE SERVER (Il ponte verso il disco)
-#[server]
-pub async fn get_sliders_test_1() -> Result<Vec<Slider>, ServerFnError> {
-    Ok(vec![
-        Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: LAGO_IMG.to_string(), 
-        },
-         Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: "/libera/test.jpg".to_string(), 
-        },
-        Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: asset!("/assets/img/index/lagobilancino.jpg").to_string(), 
-
-        },
-        Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: asset!("/assets/img/index/lagobilancinovela.jpg").to_string(), 
-        },
-        Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: asset!("/assets/img/index/lagobilancinovela.jpg").to_string(), 
-        },
-        Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: asset!("/assets/img/index/loggemedicee.jpg").to_string(),
-         
-        },
-        // ... dentro get_sliders_test ...
-        Slider {
-            id: 99,
-            titolo: "Test Diretto (Django-style)".to_string(),
-            // Usiamo il percorso relativo che il server dovrebbe servire 
-            // pescando direttamente dalla cartella assets
-            immagine_url: "/public/lago_test.jpg".to_string(), 
-        },
-    ])
-}
 
 #[server]
 pub async fn get_sliders_test() -> Result<Vec<Slider>, ServerFnError> {
