@@ -2,7 +2,8 @@ use dioxus::prelude::*;
 use serde::{Serialize, Deserialize};
 //use dioxus::fullstack::prelude::*;
 use dioxus::prelude::asset;
-
+#[cfg(not(target_arch = "wasm32"))]
+use sqlx::{SqlitePool, FromRow};
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
 enum Route {
@@ -24,10 +25,13 @@ const HEADER_SVG: Asset = asset!("/assets/img/index/cafaggiolo.jpg");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
+// Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
+#[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
 pub struct Slider {
     pub id: i32,
+    pub img: String,
     pub titolo: String,
-    pub immagine_url: String,
+   
 }
 fn main() {
     // Questo è il modo più pulito in 0.7 per far funzionare tutto
@@ -148,7 +152,7 @@ fn Echo() -> Element {
 // casabaldini
 #[component]
 fn Casabaldini() -> Element {
-    let sliders = use_resource(move || get_sliders_test());
+    let sliders = use_resource(move || get_sliders_db());
    rsx! {
         div { style: "font-family: sans-serif; padding: 20px;",
             h1 { "Galleria Dinamica Casabaldini" }
@@ -190,7 +194,7 @@ pub async fn get_sliders_test() -> Result<Vec<Slider>, ServerFnError> {
     // Qui il server legge il file dal TUO disco
     let path = "assets/img/index/lagobilancino.jpg";
     
-    let immagine_url = match fs::read(path) {
+    let img = match fs::read(path) {
         Ok(bytes) => {
             let b64 = general_purpose::STANDARD.encode(bytes);
             format!("data:image/jpeg;base64,{}", b64)
@@ -202,14 +206,53 @@ pub async fn get_sliders_test() -> Result<Vec<Slider>, ServerFnError> {
         Slider {
             id: 1,
             titolo: "Test Dinamico".to_string(),
-            immagine_url,
+            img,
         },
     ])
 }
 
+#[server]
+pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
+    // Import necessari solo lato server
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        use sqlx::SqlitePool;
+        use std::fs;
+        use base64::{Engine as _, engine::general_purpose};
+
+        // 1. Connessione al pool (sqlite:nome_file)
+        let pool = SqlitePool::connect("sqlite:casabaldini.sqlite").await
+            .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
+
+        // 2. Query al database mappata sulla struct Slider
+        let mut rows: Vec<Slider> = sqlx::query_as::<_, Slider>("SELECT id, titolo, img FROM sliders")
+            .fetch_all(&pool)
+            .await
+            .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
+
+        // 3. Trasformazione delle immagini in Base64
+        // Cicliamo ogni riga e sostituiamo il nome file con i dati reali
+        for slider in &mut rows {
+            let path = format!("assets/img/index/{}", slider.img);
+            if let Ok(bytes) = fs::read(&path) {
+                let b64 = general_purpose::STANDARD.encode(bytes);
+                slider.img = format!("data:image/jpeg;base64,{}", b64);
+            } else {
+                // Se il file non esiste, mettiamo un placeholder per non rompere il sito
+                slider.img = "https://via.placeholder.com/400?text=Immagine+Non+Trovata".to_string();
+            }
+        }
+
+        Ok(rows)
+    }
+
+    // Risposta "fantoccio" per il compilatore WASM (lato client)
+    #[cfg(target_arch = "wasm32")]
+    Ok(vec![])
+}
 #[component]
 fn ElencoSliders() -> Element {
-    let mut sliders_res = use_resource(move || get_sliders_test());
+    let mut sliders_res = use_resource(move || get_sliders_db());
     let mut count = use_signal(|| 0);
     rsx! {
         button { onclick: move |_| count += 1, "Click test: {count}" }
@@ -220,7 +263,7 @@ fn ElencoSliders() -> Element {
                         div { key: "{s.id}", style: "margin: 10px;",
                             h3 { "{s.titolo}" }
                             // Qui usiamo la stringa che arriva dal server
-                            img { src: "{s.immagine_url}", width: "200" }
+                            img { src: "{s.img}", width: "200" }
                         }
                     }
                 }
