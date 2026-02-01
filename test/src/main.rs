@@ -1,4 +1,7 @@
 use dioxus::prelude::*;
+use serde::{Serialize, Deserialize};
+//use dioxus::fullstack::prelude::*;
+use dioxus::prelude::asset;
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
@@ -20,7 +23,7 @@ const MAIN_CSS: Asset = asset!("/assets/main.css");
 const HEADER_SVG: Asset = asset!("/assets/img/index/cafaggiolo.jpg");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
-
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
 pub struct Slider {
     pub id: i32,
     pub titolo: String,
@@ -145,6 +148,7 @@ fn Echo() -> Element {
 // casabaldini
 #[component]
 fn Casabaldini() -> Element {
+    let sliders = use_resource(move || get_sliders_test());
    rsx! {
         div { style: "font-family: sans-serif; padding: 20px;",
             h1 { "Galleria Dinamica Casabaldini" }
@@ -169,7 +173,7 @@ fn Casabaldini() -> Element {
     }
 }
 
-pub async fn get_sliders_test() -> Result<Vec<Slider>, ServerFnError> {
+pub async fn get_sliders_test_orig() -> Result<Vec<Slider>, ServerFnError> {
     Ok(vec![
         Slider {
             id: 1,
@@ -234,6 +238,102 @@ pub async fn get_sliders_test_2() -> Result<Vec<Slider>, ServerFnError> {
 #[post("/api/echo")]
 async fn echo_server(input: String) -> Result<String, ServerFnError> {
     Ok(input)
+}
+// 1. IL COMPONENTE (Client)
+#[component]
+fn GalleriaDinamica() -> Element {
+    // Usiamo un resource per chiamare la funzione server
+    let sliders = use_resource(move || get_sliders_test());
+
+    match &*sliders.read_unchecked() {
+        Some(Ok(list)) => rsx! {
+            for s in list {
+                div {
+                    h3 { "{s.titolo}" }
+                    img { src: "{s.immagine_url}", width: "400" }
+                }
+            }
+        },
+        _ => rsx! { "Caricamento dati dal server..." }
+    }
+}
+
+// 2. LA FUNZIONE SERVER (Il ponte verso il disco)
+#[server]
+pub async fn get_sliders_test_1() -> Result<Vec<Slider>, ServerFnError> {
+    Ok(vec![
+        Slider {
+            id: 1,
+            titolo: "Vista dal Server".to_string(),
+            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
+            immagine_url: LAGO_IMG.to_string(), 
+        },
+         Slider {
+            id: 1,
+            titolo: "Vista dal Server".to_string(),
+            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
+            immagine_url: "/libera/test.jpg".to_string(), 
+        },
+        Slider {
+            id: 1,
+            titolo: "Vista dal Server".to_string(),
+            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
+            immagine_url: asset!("/assets/img/index/lagobilancino.jpg").to_string(), 
+
+        },
+        Slider {
+            id: 1,
+            titolo: "Vista dal Server".to_string(),
+            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
+            immagine_url: asset!("/assets/img/index/lagobilancinovela.jpg").to_string(), 
+        },
+        Slider {
+            id: 1,
+            titolo: "Vista dal Server".to_string(),
+            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
+            immagine_url: asset!("/assets/img/index/lagobilancinovela.jpg").to_string(), 
+        },
+        Slider {
+            id: 1,
+            titolo: "Vista dal Server".to_string(),
+            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
+            immagine_url: asset!("/assets/img/index/loggemedicee.jpg").to_string(),
+         
+        },
+        // ... dentro get_sliders_test ...
+        Slider {
+            id: 99,
+            titolo: "Test Diretto (Django-style)".to_string(),
+            // Usiamo il percorso relativo che il server dovrebbe servire 
+            // pescando direttamente dalla cartella assets
+            immagine_url: "/public/lago_test.jpg".to_string(), 
+        },
+    ])
+}
+
+#[server]
+pub async fn get_sliders_test() -> Result<Vec<Slider>, ServerFnError> {
+    use std::fs;
+    use base64::{Engine as _, engine::general_purpose};
+
+    // Qui il server legge il file dal TUO disco
+    let path = "assets/img/index/lagobilancino.jpg";
+    
+    let immagine_url = match fs::read(path) {
+        Ok(bytes) => {
+            let b64 = general_purpose::STANDARD.encode(bytes);
+            format!("data:image/jpeg;base64,{}", b64)
+        },
+        Err(_) => "https://via.placeholder.com/400?text=Immagine+non+trovata".to_string(),
+    };
+
+    Ok(vec![
+        Slider {
+            id: 1,
+            titolo: "Test Dinamico".to_string(),
+            immagine_url,
+        },
+    ])
 }
 
 #[component]
