@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
 use serde::{Serialize, Deserialize};
-//use dioxus::fullstack::prelude::*;
+use web_sys::{window, Document};
 use dioxus::prelude::asset;
+use crate::dioxus_elements::script::script;
 #[cfg(not(target_arch = "wasm32"))]
 use sqlx::{SqlitePool, FromRow};
 #[derive(Debug, Clone, Routable, PartialEq)]
@@ -15,12 +16,10 @@ enum Route {
     #[route("/blog/:id")]
     Blog { id: i32 },
 
-    
 }
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
-//const HEADER_SVG: Asset = asset!("/assets/header.svg");
 const HEADER_SVG: Asset = asset!("/assets/img/index/cafaggiolo.jpg");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
@@ -31,7 +30,7 @@ pub struct Slider {
     pub id: i32,
     pub img: String,
     pub titolo: String,
-   
+    pub testo: String,
 }
 fn main() {
     // Questo è il modo più pulito in 0.7 per far funzionare tutto
@@ -152,9 +151,20 @@ fn Echo() -> Element {
 // casabaldini
 #[component]
 fn Casabaldini() -> Element {
+    //let document = window().unwrap().document().unwrap();
     let sliders = use_resource(move || get_sliders_db());
+    //script.set_attribute("src", "/assets/home/dist/js/mio.js").unwrap();
+    //document.body().unwrap().append_child(&script).unwrap();
    rsx! {
-        div { style: "font-family: sans-serif; padding: 20px;",
+    document::Link { rel: "stylesheet", href: "/assets/home/dist/css/slider-pro.min.css" }
+    document::Link { rel: "stylesheet", href: "/assets/home/dist/css/examples.css" }
+    document::Link { rel: "stylesheet", href: "/assets/menu_6/css/default.css" }
+     document::Script { src: "/assets/home/dist/js/mio.js" }
+     document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
+    document::Script { src: "/assets/home/dist/js/jquery.sliderPro.min.js" }
+
+    
+            div { class:"slider-pro", 
             h1 { "Galleria Dinamica Casabaldini" }
             
             p { 
@@ -163,12 +173,6 @@ fn Casabaldini() -> Element {
                 } else { 
                     span { style: "color: orange;", "🏠 SERVER RENDERING" }
                 }
-            }
-
-            div {
-                p { "Test immagine con macro asset!:" }
-                // 2. USIAMO LA COSTANTE ASSET
-                img { src: LAGO_IMG, width: "300" }
             }
 
             hr {}
@@ -186,30 +190,6 @@ async fn echo_server(input: String) -> Result<String, ServerFnError> {
 
 // 2. LA FUNZIONE SERVER (Il ponte verso il disco)
 
-#[server]
-pub async fn get_sliders_test() -> Result<Vec<Slider>, ServerFnError> {
-    use std::fs;
-    use base64::{Engine as _, engine::general_purpose};
-
-    // Qui il server legge il file dal TUO disco
-    let path = "assets/img/index/lagobilancino.jpg";
-    
-    let img = match fs::read(path) {
-        Ok(bytes) => {
-            let b64 = general_purpose::STANDARD.encode(bytes);
-            format!("data:image/jpeg;base64,{}", b64)
-        },
-        Err(_) => "https://via.placeholder.com/400?text=Immagine+non+trovata".to_string(),
-    };
-
-    Ok(vec![
-        Slider {
-            id: 1,
-            titolo: "Test Dinamico".to_string(),
-            img,
-        },
-    ])
-}
 
 #[server]
 pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
@@ -225,7 +205,7 @@ pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
             .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
 
         // 2. Query al database mappata sulla struct Slider
-        let mut rows: Vec<Slider> = sqlx::query_as::<_, Slider>("SELECT id, titolo, img FROM sliders")
+        let mut rows: Vec<Slider> = sqlx::query_as::<_, Slider>("SELECT id, titolo, img, testo FROM sliders")
             .fetch_all(&pool)
             .await
             .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
@@ -255,17 +235,28 @@ fn ElencoSliders() -> Element {
     let mut sliders_res = use_resource(move || get_sliders_db());
     let mut count = use_signal(|| 0);
     rsx! {
+    document::Link { rel: "stylesheet", href: "/assets/home/dist/css/slider-pro.min.css" }
+    document::Link { rel: "stylesheet", href: "/assets/home/dist/css/examples.css" }
+    document::Link { rel: "stylesheet", href: "/assets/menu_6/css/default.css" }
+    
+        
+    document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
+    document::Script { src: "/assets/home/dist/js/jquery.sliderPro.min.js" }
         button { onclick: move |_| count += 1, "Click test: {count}" }
         match &*sliders_res.read_unchecked() {
             Some(Ok(list)) => rsx! {
-                div { style: "display: flex;",
+                
+                div { id:"example1",class:"slider-pro",
+                    div {class:"sp-slides",
                     for s in list {
-                        div { key: "{s.id}", style: "margin: 10px;",
+                        div { class: "sp-slide", key: "{s.id}",
                             h3 { "{s.titolo}" }
                             // Qui usiamo la stringa che arriva dal server
-                            img { src: "{s.img}", width: "200" }
+                            img { src: "{s.img}", width: "250" }
+                            h3 { "{s.testo}" }
                         }
                     }
+                }
                 }
             },
             _ => rsx! { p { "Caricamento dati server..." } }

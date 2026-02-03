@@ -10,6 +10,7 @@ edition = "2021"
 base64 = "0.22.1"
 dioxus = { version = "0.7.3", features = ["router", "fullstack"] }
 serde = "1.0.228"
+web-sys = "0.3.85"
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 axum = "=0.8"
 sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio", "macros"] }
