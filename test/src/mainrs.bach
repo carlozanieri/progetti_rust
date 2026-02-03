@@ -1,9 +1,8 @@
 use dioxus::prelude::*;
 use serde::{Serialize, Deserialize};
+use web_sys::{window, Document};
 use dioxus::prelude::asset;
-use crate::document::eval;
-//use web_sys::console::count;
-
+use crate::dioxus_elements::script::script;
 #[cfg(not(target_arch = "wasm32"))]
 use sqlx::{SqlitePool, FromRow};
 #[derive(Debug, Clone, Routable, PartialEq)]
@@ -22,14 +21,13 @@ enum Route {
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 const SLIDERMIN_CSS: Asset = asset!("/assets/home/dist/css/slider-pro.min.css");
-const SLIDER_CSS: Asset = asset!("/assets/home/dist/css/slider-pro.css");
 const EXAMPLE_CSS: Asset = asset!("/assets/home/dist/css/examples.css");
 const MENU_CSS: Asset = asset!("/assets/menu_6/css/default.css");
 const HEADER_SVG: Asset = asset!("/assets/img/index/cafaggiolo.jpg");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
 const JQUERY_JS: Asset = asset!("/assets/home/dist/js/jquery.sliderPro.min.js");
-//const MIO_JS: Asset = asset!("/assets/home/dist/js/mio.js");
+const MIO_JS: Asset = asset!("/assets/home/dist/js/mio.js");
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
 // Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
@@ -47,18 +45,18 @@ fn main() {
 
 #[component]
 fn App() -> Element {
-    // 1. Definiamo l'effetto PRIMA del rsx!
     rsx! {
-        document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
+        document::Link { rel: "icon", href: FAVICON }
+        //document::Link { rel: "stylesheet", href: MAIN_CSS }
         document::Link { rel: "stylesheet", href: EXAMPLE_CSS }
         document::Link { rel: "stylesheet", href: MENU_CSS }
         document::Link { rel: "stylesheet", href: SLIDERMIN_CSS }
-        document::Link { rel: "stylesheet", href: SLIDER_CSS }
         document::Script { src: JQUERY_JS }
-        document::Link { rel: "icon", href: FAVICON }
-        document::Link { rel: "stylesheet", href: MAIN_CSS } 
-        document::Link { rel: "stylesheet", href: TAILWIND_CSS }
-          
+        document::Script { src: MIO_JS }
+        // Carichiamo le librerie a livello globale
+        document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
+        document::Script { src: asset!("/assets/home/dist/js/jquery.sliderPro.min.js") }
+
         Router::<Route> {}
     }
 }
@@ -170,10 +168,16 @@ fn Echo() -> Element {
 fn Casabaldini() -> Element {
     //let document = window().unwrap().document().unwrap();
     let sliders = use_resource(move || get_sliders_db());
-    
+    //script.set_attribute("src", asset!("/assets/home/dist/js/mio.js").unwrap();
+    //document.body().unwrap().append_child(&script).unwrap();
    rsx! {
-           
-     
+     document::Link { rel: "stylesheet", href: "/assets/home/dist/css/slider-pro.min.css" }
+    document::Link { rel: "stylesheet", href: "/assets/home/dist/css/examples.css" }
+    document::Link { rel: "stylesheet", href: "/assets/menu_6/css/default.css" }
+    document::Script { src: "/assets/home/dist/js/mio.js" }
+    document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
+    document::Script { src: "/assets/home/dist/js/jquery.sliderPro.min.js" }
+
     
             div { class:"slider-pro", 
             h1 { "Galleria Dinamica Casabaldini" }
@@ -243,59 +247,34 @@ pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
 }
 #[component]
 fn ElencoSliders() -> Element {
-    let sliders_res = use_resource(move || get_sliders_db());
-
-    use_effect(move || {
-    spawn(async move {
-        let _ = eval(r#"
-            console.log("🛠 TENTATIVO DI ATTIVAZIONE...");
-            var monitor = setInterval(function() {
-                // Controlliamo se jQuery esiste PRIMA di usare $
-                if (window.jQuery && window.jQuery.fn.sliderPro) {
-                    var $ = window.jQuery; // Definiamo $ localmente per sicurezza
-                    var $slider = $('#example1');
-                    
-                    if ($slider.length > 0) {
-                        console.log("✅ JQuery e Plugin pronti! Inizializzo...");
-                        $slider.sliderPro({
-                            width: 960,
-                            height: 500,
-                            arrows: true,
-                            autoplay: true
-                        });
-                        clearInterval(monitor);
-                    }
-                } else {
-                    console.log("⏳ In attesa di jQuery e del plugin...");
-                }
-            }, 500);
-        "#);
-    });
-});;
-
+    let mut sliders_res = use_resource(move || get_sliders_db());
+    let mut count = use_signal(|| 0);
     rsx! {
+    document::Link { rel: "stylesheet", href: "/assets/home/dist/css/slider-pro.min.css" }
+    document::Link { rel: "stylesheet", href: "/assets/home/dist/css/examples.css" }
+    document::Link { rel: "stylesheet", href: "/assets/menu_6/css/default.css" }
+    
+        
+    document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
+    document::Script { src: "/assets/home/dist/js/jquery.sliderPro.min.js" }
+        button { onclick: move |_| count += 1, "Click test: {count}" }
         match &*sliders_res.read_unchecked() {
             Some(Ok(list)) => rsx! {
-                // Il contenitore principale deve avere la classe slider-pro
-                div { id: "example1", class: "slider-pro",
-                    div { class: "sp-slides",
-                        for s in list {
-                            // Ogni slide deve avere la classe sp-slide
-                            div { class: "sp-slide", key: "{s.id}",
-                                // Struttura originale dei tuoi testi
-                                h3 { "{s.titolo}" }
-                                img { 
-                                    class: "sp-image", 
-                                    src: "{s.img}", 
-                                    width: "250" 
-                                }
-                                h3 { "{s.testo}" }
-                            }
+                
+                div { id:"example1",class:"slider-pro",
+                    div {class:"sp-slides",
+                    for s in list {
+                        div { class: "sp-slide", key: "{s.id}",
+                            h3 { "{s.titolo}" }
+                            // Qui usiamo la stringa che arriva dal server
+                            img { src: "{s.img}", width: "250" }
+                            h3 { "{s.testo}" }
                         }
                     }
                 }
+                }
             },
-            _ => rsx! { p { "Caricamento dati dal server..." } }
+            _ => rsx! { p { "Caricamento dati server..." } }
         }
     }
 }
