@@ -23,6 +23,8 @@ const MAIN_CSS: Asset = asset!("/assets/main.css");
 const HEADER_SVG: Asset = asset!("/assets/img/index/cafaggiolo.jpg");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
+const JQUERY_JS: Asset = asset!("/assets/home/dist/js/jquery.sliderPro.min.js");
+const MIO_JS: Asset = asset!("/assets/home/dist/js/mio.js");
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
 // Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
@@ -41,7 +43,13 @@ fn main() {
 fn App() -> Element {
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
-        document::Link { rel: "stylesheet", href: MAIN_CSS } document::Link { rel: "stylesheet", href: TAILWIND_CSS }
+        document::Link { rel: "stylesheet", href: MAIN_CSS } 
+        document::Link { rel: "stylesheet", href: TAILWIND_CSS }
+        
+        // Carichiamo le librerie a livello globale
+        document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
+        document::Script { src: asset!("/assets/home/dist/js/jquery.sliderPro.min.js") }
+
         Router::<Route> {}
     }
 }
@@ -153,7 +161,7 @@ fn Echo() -> Element {
 fn Casabaldini() -> Element {
     //let document = window().unwrap().document().unwrap();
     let sliders = use_resource(move || get_sliders_db());
-    //script.set_attribute("src", "/assets/home/dist/js/mio.js").unwrap();
+    //script.set_attribute("src", asset!("/assets/home/dist/js/mio.js").unwrap();
     //document.body().unwrap().append_child(&script).unwrap();
    rsx! {
     document::Link { rel: "stylesheet", href: "/assets/home/dist/css/slider-pro.min.css" }
