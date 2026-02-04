@@ -41,6 +41,8 @@ pub struct Slider {
     pub testo: String,
     pub caption: String,
 }
+
+
 fn main() {
     // Questo è il modo più pulito in 0.7 per far funzionare tutto
     dioxus::launch(App);
@@ -179,13 +181,13 @@ fn Casabaldini() -> Element {
             div { class:"slider-pro", 
             h1 { "Galleria Dinamica Casabaldini" }
             
-            p { 
+            /*p { 
                 if cfg!(target_arch = "wasm32") { 
                     span { style: "color: green;", "✅ CLIENT ATTIVO" }
                 } else { 
                     span { style: "color: orange;", "🏠 SERVER RENDERING" }
                 }
-            }
+            }*/
 
             hr {}
             ElencoSliders {}
@@ -213,7 +215,7 @@ pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
         use base64::{Engine as _, engine::general_purpose};
 
         // 1. Connessione al pool (sqlite:nome_file)
-        let pool = SqlitePool::connect("sqlite:casabaldini.sqlite").await
+        let pool = SqlitePool::connect("sqlite:/home/carlo/db_remoto/casabaldini.sqlite").await
             .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
 
         // 2. Query al database mappata sulla struct Slider
@@ -286,10 +288,12 @@ fn ElencoSliders() -> Element {
                                 // Struttura originale dei tuoi testi
                                 h3 {class:"sp-layer sp-black sp-padding", "data-horizontal": "40","data-vertical": "10%","data-show-transition": "left","data-hide-transition": "left" , "{s.titolo}" }
                                 img { 
-                                    class: "sp-image", 
-                                    src: "{s.img}", 
-                                    width: "250",  style:"max-width: 110%; height: 110%;"
-                                }
+    class: "sp-image", 
+    // Usiamo l'URL che punta direttamente al file nel filesystem 
+    // (funziona solo in locale/debug, ma ci serve per sbloccare lo sviluppo)
+    src: "file:///home/carlo/progetti_rust/test/assets/img/index/{s.img}", 
+    width: "250",
+}
                                 p {class:"sp-layer sp-white sp-padding hide-medium-screen", 
 					            "data-horizontal":"40", "data-vertical":"34%", 
 					            "data-show-transition":"left", "data-width":"650","data-show-delay":"400", "data-hide-transition":"left", "data-hide-delay":"500","{s.testo}"
@@ -307,4 +311,11 @@ fn ElencoSliders() -> Element {
             _ => rsx! { p { "Caricamento dati dal server..." } }
         }
     }
+}
+
+#[server]
+pub async fn get_image_bytes(name: String) -> Result<Vec<u8>, ServerFnError> {
+    use std::fs;
+    let path = format!("/home/carlo/progetti_rust/test/assets/img/index/{}", name);
+    fs::read(path).map_err(|e| ServerFnError::new(format!("Errore lettura file: {}", e)))
 }

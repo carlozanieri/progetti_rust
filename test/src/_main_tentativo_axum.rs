@@ -2,8 +2,9 @@ use dioxus::prelude::*;
 use serde::{Serialize, Deserialize};
 use dioxus::prelude::asset;
 use crate::document::eval;
+use axum::{extract::State, response::{Html, IntoResponse}, routing::get, Router};
 //use web_sys::console::count;
-
+use tower_http::services::ServeDir;
 #[cfg(not(target_arch = "wasm32"))]
 use sqlx::{SqlitePool, FromRow};
 #[derive(Debug, Clone, Routable, PartialEq)]
@@ -29,6 +30,7 @@ const HEADER_SVG: Asset = asset!("/assets/img/index/cafaggiolo.jpg");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
 const JQUERY_JS: Asset = asset!("/assets/home/dist/js/jquery.sliderPro.min.js");
+
 //const MIO_JS: Asset = asset!("/assets/home/dist/js/mio.js");
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
@@ -144,7 +146,7 @@ fn Navbar() -> Element {
 #[component]
 fn Echo() -> Element {
     let mut response = use_signal(|| String::new());
-
+    
     rsx! {
         div {
             id: "echo",
@@ -213,7 +215,7 @@ pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
         use base64::{Engine as _, engine::general_purpose};
 
         // 1. Connessione al pool (sqlite:nome_file)
-        let pool = SqlitePool::connect("sqlite:/home/carlo/db_remoto/casabaldini.sqlite").await
+        let pool = SqlitePool::connect("sqlite:casabaldini.sqlite").await
             .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
 
         // 2. Query al database mappata sulla struct Slider
@@ -273,7 +275,7 @@ fn ElencoSliders() -> Element {
         "#);
     });
 });;
-
+    let immagini_dinamiche = setup_static_handler(axum::Router);
     rsx! {
         match &*sliders_res.read_unchecked() {
             Some(Ok(list)) => rsx! {
@@ -286,10 +288,11 @@ fn ElencoSliders() -> Element {
                                 // Struttura originale dei tuoi testi
                                 h3 {class:"sp-layer sp-black sp-padding", "data-horizontal": "40","data-vertical": "10%","data-show-transition": "left","data-hide-transition": "left" , "{s.titolo}" }
                                 img { 
-                                    class: "sp-image", 
-                                    src: "{s.img}", 
-                                    width: "250",  style:"max-width: 110%; height: 110%;"
-                                }
+                            class: "sp-image", 
+                        // Il browser chiederà: http://localhost:8080/immagini_dinamiche/cafaggiolo.jpg
+                        // Il server Rust risponderà istantaneamente leggendo il file originale
+                            src: "/immagini_dinamiche/{s.img}", width: "250",
+}
                                 p {class:"sp-layer sp-white sp-padding hide-medium-screen", 
 					            "data-horizontal":"40", "data-vertical":"34%", 
 					            "data-show-transition":"left", "data-width":"650","data-show-delay":"400", "data-hide-transition":"left", "data-hide-delay":"500","{s.testo}"
@@ -307,4 +310,17 @@ fn ElencoSliders() -> Element {
             _ => rsx! { p { "Caricamento dati dal server..." } }
         }
     }
+}
+
+// Questa è una funzione di supporto che non c'entra con le ServerFn di Dioxus
+// Serve a mappare una cartella reale su un URL
+#[cfg(not(target_arch = "wasm32"))]
+pub fn setup_static_handler(router: axum::Router) -> axum::Router {
+    use tow_http::services::ServeDir;
+    // Diciamo al server: "Tutto quello che arriva su /immagini_dinamiche/ 
+    // vai a prenderlo fisicamente in questa cartella"
+    router.nest_service(
+        "/immagini_dinamiche", 
+        ServeDir::new("/home/carlo/progetti_rust/test/assets/img/index/")
+    )
 }
