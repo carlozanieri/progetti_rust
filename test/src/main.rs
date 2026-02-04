@@ -39,6 +39,7 @@ pub struct Slider {
     pub img: String,
     pub titolo: String,
     pub testo: String,
+    pub caption: String,
 }
 fn main() {
     // Questo è il modo più pulito in 0.7 per far funzionare tutto
@@ -216,7 +217,7 @@ pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
             .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
 
         // 2. Query al database mappata sulla struct Slider
-        let mut rows: Vec<Slider> = sqlx::query_as::<_, Slider>("SELECT id, titolo, img, testo FROM sliders")
+        let mut rows: Vec<Slider> = sqlx::query_as::<_, Slider>("SELECT id, titolo, img, testo, caption FROM sliders")
             .fetch_all(&pool)
             .await
             .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
@@ -283,11 +284,19 @@ fn ElencoSliders() -> Element {
                             // Ogni slide deve avere la classe sp-slide
                             div { class: "sp-slide", key: "{s.id}",
                                 // Struttura originale dei tuoi testi
-                                h3 { "{s.titolo}" }
+                                h3 {class:"sp-layer sp-black sp-padding", "data-horizontal": "40","data-vertical": "10%","data-show-transition": "left","data-hide-transition": "left" , "{s.titolo}" }
                                 img { 
                                     class: "sp-image", 
                                     src: "{s.img}", 
-                                    width: "250" 
+                                    width: "250",  style:"max-width: 110%; height: 110%;"
+                                }
+                                p {class:"sp-layer sp-white sp-padding hide-medium-screen", 
+					            "data-horizontal":"40", "data-vertical":"34%", 
+					            "data-show-transition":"left", "data-width":"650","data-show-delay":"400", "data-hide-transition":"left", "data-hide-delay":"500","{s.testo}"
+                                }
+                                p {class:"sp-layer sp-white sp-padding hide-medium-screen", 
+					            "data-horizontal":"40", "data-vertical":"22%", 
+					            "data-show-transition":"left", "data-show-delay":"400", "data-hide-transition":"left", "data-hide-delay":"400","{s.caption}"
                                 }
                                 h3 { "{s.testo}" }
                             }
