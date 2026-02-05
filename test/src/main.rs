@@ -1,11 +1,12 @@
-use dioxus::prelude::*;
+use dioxus::{fullstack::reqwest::Url, prelude::*};
 use serde::{Serialize, Deserialize};
 use dioxus::prelude::asset;
+//use web_sys::Url;
 use crate::document::eval;
 //use web_sys::console::count;
 
 #[cfg(not(target_arch = "wasm32"))]
-use sqlx::{SqlitePool, FromRow};
+use sqlx::{PgPool, FromRow}; // Cambiato da SqlitePool a PgPool
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
 enum Route {
@@ -30,6 +31,7 @@ const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
 const JQUERY_JS: Asset = asset!("/assets/home/dist/js/jquery.sliderPro.min.js");
 //const MIO_JS: Asset = asset!("/assets/home/dist/js/mio.js");
+const DB_URL: &str = "postgres://carlo:treX39@57.131.31.228:5432/casabaldini";
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
 // Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
@@ -205,32 +207,35 @@ async fn echo_server(input: String) -> Result<String, ServerFnError> {
 
 #[server]
 pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
-    // Import necessari solo lato server
     #[cfg(not(target_arch = "wasm32"))]
     {
-        use sqlx::SqlitePool;
+        use sqlx::PgPool;
         use std::fs;
         use base64::{Engine as _, engine::general_purpose};
 
-        // 1. Connessione al pool (sqlite:nome_file)
-        let pool = SqlitePool::connect("sqlite:/home/carlo/db_remoto/casabaldini.sqlite").await
-            .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
+        // 1. Stringa di connessione Postgres
+        // Formato: postgres://utente:password@host:porta/nome_database
+        // Se hai impostato una password per l'utente postgres, inseriscila qui
+        //
+        
 
-        // 2. Query al database mappata sulla struct Slider
+        // 2. Connessione al Pool Postgres
+        let pool = PgPool::connect(DB_URL).await
+            .map_err(|e| ServerFnError::new(format!("Errore connessione Postgres: {}", e)))?;
+
+        // 3. Query (La sintassi SQL è identica in questo caso)
         let mut rows: Vec<Slider> = sqlx::query_as::<_, Slider>("SELECT id, titolo, img, testo, caption FROM sliders")
             .fetch_all(&pool)
             .await
             .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
 
-        // 3. Trasformazione delle immagini in Base64
-        // Cicliamo ogni riga e sostituiamo il nome file con i dati reali
+        // 4. Trasformazione Base64 (lasciamola per ora come richiesto)
         for slider in &mut rows {
             let path = format!("assets/img/index/{}", slider.img);
             if let Ok(bytes) = fs::read(&path) {
                 let b64 = general_purpose::STANDARD.encode(bytes);
                 slider.img = format!("data:image/jpeg;base64,{}", b64);
             } else {
-                // Se il file non esiste, mettiamo un placeholder per non rompere il sito
                 slider.img = "https://via.placeholder.com/400?text=Immagine+Non+Trovata".to_string();
             }
         }
@@ -238,7 +243,6 @@ pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
         Ok(rows)
     }
 
-    // Risposta "fantoccio" per il compilatore WASM (lato client)
     #[cfg(target_arch = "wasm32")]
     Ok(vec![])
 }
