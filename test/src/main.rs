@@ -207,45 +207,27 @@ async fn echo_server(input: String) -> Result<String, ServerFnError> {
 
 #[server]
 pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        use sqlx::PgPool;
-        use std::fs;
-        use base64::{Engine as _, engine::general_purpose};
+    // Trasformiamo l'errore di connessione e di query in stringhe leggibili da ServerFnError
+    let pool = PgPool::connect(DB_URL)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
 
-        // 1. Stringa di connessione Postgres
-        // Formato: postgres://utente:password@host:porta/nome_database
-        // Se hai impostato una password per l'utente postgres, inseriscila qui
-        //
-        
+    let rows = sqlx::query_as::<_, Slider>("SELECT id, titolo, img, testo, caption FROM sliders")
+        .fetch_all(&pool)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
 
-        // 2. Connessione al Pool Postgres
-        let pool = PgPool::connect(DB_URL).await
-            .map_err(|e| ServerFnError::new(format!("Errore connessione Postgres: {}", e)))?;
-
-        // 3. Query (La sintassi SQL è identica in questo caso)
-        let mut rows: Vec<Slider> = sqlx::query_as::<_, Slider>("SELECT id, titolo, img, testo, caption FROM sliders")
-            .fetch_all(&pool)
-            .await
-            .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
-
-        // 4. Trasformazione Base64 (lasciamola per ora come richiesto)
-        for slider in &mut rows {
-            let path = format!("assets/img/index/{}", slider.img);
-            if let Ok(bytes) = fs::read(&path) {
-                let b64 = general_purpose::STANDARD.encode(bytes);
-                slider.img = format!("data:image/jpeg;base64,{}", b64);
-            } else {
-                slider.img = "https://via.placeholder.com/400?text=Immagine+Non+Trovata".to_string();
-            }
-        }
-
-        Ok(rows)
-    }
-
-    #[cfg(target_arch = "wasm32")]
-    Ok(vec![])
+    Ok(rows)
 }
+
+#[server]
+pub async fn get_single_image_b64(name: String) -> Result<String, ServerFnError> {
+    use base64::{Engine as _, engine::general_purpose};
+    let path = format!("assets/img/index/{}", name);
+    let bytes = std::fs::read(path).map_err(|e| ServerFnError::new(e.to_string()))?;
+    Ok(format!("data:image/jpeg;base64,{}", general_purpose::STANDARD.encode(bytes)))
+}
+
 #[component]
 fn ElencoSliders() -> Element {
     let sliders_res = use_resource(move || get_sliders_db());
@@ -289,11 +271,9 @@ fn ElencoSliders() -> Element {
                             div { class: "sp-slide", key: "{s.id}",
                                 // Struttura originale dei tuoi testi
                                 h3 {class:"sp-layer sp-black sp-padding", "data-horizontal": "40","data-vertical": "10%","data-show-transition": "left","data-hide-transition": "left" , "{s.titolo}" }
-                                img { 
-                                    class: "sp-image", 
-                                    src: "{s.img}", 
-                                    width: "250",  style:"max-width: 110%; height: 110%;"
-                                }
+                                
+                                
+                                FastImage { name: s.img.clone() }
                                 p {class:"sp-layer sp-white sp-padding hide-medium-screen", 
 					            "data-horizontal":"40", "data-vertical":"34%", 
 					            "data-show-transition":"left", "data-width":"650","data-show-delay":"400", "data-hide-transition":"left", "data-hide-delay":"500","{s.testo}"
@@ -309,6 +289,41 @@ fn ElencoSliders() -> Element {
                 }
             },
             _ => rsx! { p { "Caricamento dati dal server..." } }
+        }
+    }
+}
+
+#[component]
+fn FastImage(name: String) -> Element {
+    let mut img_data = use_signal(|| String::new());
+
+    // Recupera l'immagine in modo asincrono senza bloccare la UI
+    use_resource(move || {
+        let n = name.clone();
+        async move {
+            if let Ok(b64) = get_single_image_b64(n).await {
+                img_data.set(b64);
+            }
+        }
+    });
+
+    if img_data().is_empty() {
+        // Placeholder mentre il server "mastica" i 6.8MB
+        rsx! { 
+            div { 
+                class: "sp-image-placeholder", 
+                style: "width: 250px; height: 150px; background: #eee; display: flex; align-items: center; justify-content: center;",
+                "Caricamento..." 
+            } 
+        }
+    } else {
+        rsx! { 
+            img { 
+                class: "sp-image", 
+                src: "{img_data}", 
+                width: "250",
+                style: "max-width: 110%; height: 110%;"
+            } 
         }
     }
 }
