@@ -37,7 +37,7 @@ const DB_URL: &str = "postgres://carlo:treX39@57.131.31.228:5432/casabaldini";
 // Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
 pub struct Slider {
-    pub id: i32,
+    pub id: i64,
     pub img: String,
     pub titolo: String,
     pub testo: String,
@@ -216,7 +216,7 @@ pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
         .fetch_all(&pool)
         .await
         .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
-
+    println!("📡 Server: Row recuperate, invio in corso...");
     Ok(rows)
 }
 
@@ -232,63 +232,58 @@ pub async fn get_single_image_b64(name: String) -> Result<String, ServerFnError>
 fn ElencoSliders() -> Element {
     let sliders_res = use_resource(move || get_sliders_db());
 
-    use_effect(move || {
-    spawn(async move {
-        let _ = eval(r#"
-            console.log("🛠 TENTATIVO DI ATTIVAZIONE...");
-            var monitor = setInterval(function() {
-                // Controlliamo se jQuery esiste PRIMA di usare $
-                if (window.jQuery && window.jQuery.fn.sliderPro) {
-                    var $ = window.jQuery; // Definiamo $ localmente per sicurezza
-                    var $slider = $('#example1');
-                    
-                    if ($slider.length > 0) {
-                        console.log("✅ JQuery e Plugin pronti! Inizializzo...");
-                        $slider.sliderPro({
-                            width: 960,
-                            height: 500,
-                            arrows: true,
-                            autoplay: true
-                        });
-                        clearInterval(monitor);
-                    }
+    // Spostiamo la logica di inizializzazione in una funzione richiamabile
+    let inizializza_slider = move |_| {
+        spawn(async move {
+            let _ = eval(r#"
+                console.log("🔍 Controllo DOM in corso...");
+                var $slider = $('#example1');
+                
+                console.log("Elementi trovati:", $slider.length);
+                console.log("HTML interno:", $slider.html() ? $slider.html().substring(0, 100) : "VUOTO");
+                console.log("jQuery presente:", typeof jQuery !== 'undefined');
+                console.log("Plugin SliderPro presente:", typeof $.fn.sliderPro !== 'undefined');
+
+                if ($slider.length > 0 && typeof $.fn.sliderPro !== 'undefined') {
+                    console.log("🚀 TENTATIVO INIZIALIZZAZIONE...");
+                    $slider.sliderPro({
+                        width: 960,
+                        height: 500,
+                        arrows: true,
+                        autoplay: true,
+                        autoHeight: false,
+                        forceSize: 'fullWidth'
+                    });
+                    console.log("✅ Chiamata sliderPro effettuata");
                 } else {
-                    console.log("⏳ In attesa di jQuery e del plugin...");
+                    console.error("❌ Errore critico: Slider o Plugin non trovati");
                 }
-            }, 500);
-        "#);
-    });
-});;
+            "#);
+        });
+    };
 
     rsx! {
         match &*sliders_res.read_unchecked() {
             Some(Ok(list)) => rsx! {
-                // Il contenitore principale deve avere la classe slider-pro
-                div { id: "example1", class: "slider-pro",
+                div { 
+                    id: "example1", 
+                    class: "slider-pro",
+                    // IMPORTANTE: Quando il div appare nel DOM con i dati, 
+                    // chiamiamo l'inizializzazione
+                    onmounted: inizializza_slider, 
+                    
                     div { class: "sp-slides",
                         for s in list {
-                            // Ogni slide deve avere la classe sp-slide
                             div { class: "sp-slide", key: "{s.id}",
-                                // Struttura originale dei tuoi testi
-                                h3 {class:"sp-layer sp-black sp-padding", "data-horizontal": "40","data-vertical": "10%","data-show-transition": "left","data-hide-transition": "left" , "{s.titolo}" }
-                                
-                                
+                                h3 { class: "sp-layer sp-black sp-padding", "{s.titolo}" }
                                 FastImage { name: s.img.clone() }
-                                p {class:"sp-layer sp-white sp-padding hide-medium-screen", 
-					            "data-horizontal":"40", "data-vertical":"34%", 
-					            "data-show-transition":"left", "data-width":"650","data-show-delay":"400", "data-hide-transition":"left", "data-hide-delay":"500","{s.testo}"
-                                }
-                                p {class:"sp-layer sp-white sp-padding hide-medium-screen", 
-					            "data-horizontal":"40", "data-vertical":"22%", 
-					            "data-show-transition":"left", "data-show-delay":"400", "data-hide-transition":"left", "data-hide-delay":"400","{s.caption}"
-                                }
-                                h3 { "{s.testo}" }
+                                p { class: "sp-layer sp-white sp-padding", "{s.testo}" }
                             }
                         }
                     }
                 }
             },
-            _ => rsx! { p { "Caricamento dati dal server..." } }
+            _ => rsx! { p { "Caricamento in corso..." } }
         }
     }
 }
@@ -297,9 +292,11 @@ fn ElencoSliders() -> Element {
 fn FastImage(name: String) -> Element {
     let mut img_data = use_signal(|| String::new());
 
-    // Recupera l'immagine in modo asincrono senza bloccare la UI
+    // Cloniamo 'name' qui per la risorsa, lasciando l'originale intatto per il rsx!
+    let name_for_resource = name.clone();
+
     use_resource(move || {
-        let n = name.clone();
+        let n = name_for_resource.clone();
         async move {
             if let Ok(b64) = get_single_image_b64(n).await {
                 img_data.set(b64);
@@ -308,21 +305,23 @@ fn FastImage(name: String) -> Element {
     });
 
     if img_data().is_empty() {
-        // Placeholder mentre il server "mastica" i 6.8MB
         rsx! { 
             div { 
-                class: "sp-image-placeholder", 
-                style: "width: 250px; height: 150px; background: #eee; display: flex; align-items: center; justify-content: center;",
-                "Caricamento..." 
+                class: "sp-image", 
+                style: "width: 250px; height: 500px; background: #222;", 
+                "..." 
             } 
         }
     } else {
         rsx! { 
             img { 
+                // Ora 'name' è disponibile perché non è stato "mosso" sopra
+                key: "{name}",
                 class: "sp-image", 
                 src: "{img_data}", 
                 width: "250",
-                style: "max-width: 110%; height: 110%;"
+                "loading": "eager",
+                style: "max-width: 110%; height: 110%;",
             } 
         }
     }
