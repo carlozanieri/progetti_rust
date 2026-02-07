@@ -175,7 +175,7 @@ fn Casabaldini() -> Element {
     let sliders = use_resource(move || get_sliders_db());
     
    rsx! {
-           
+        document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }   
      
     
             div { class:"slider-pro", 
@@ -265,6 +265,7 @@ fn ElencoSliders() -> Element {
     rsx! {
         match &*sliders_res.read_unchecked() {
             Some(Ok(list)) => rsx! {
+            span {style:"  margin-top: 65%; margin-left: 28%; ",
                 div { 
                     id: "example1", 
                     class: "slider-pro",
@@ -275,13 +276,18 @@ fn ElencoSliders() -> Element {
                     div { class: "sp-slides",
                         for s in list {
                             div { class: "sp-slide", key: "{s.id}",
-                                h3 { class: "sp-layer sp-black sp-padding", "{s.titolo}" }
                                 FastImage { name: s.img.clone() }
-                                p { class: "sp-layer sp-white sp-padding", "{s.testo}" }
-                            }
+                                h3 { class:"sp-layer sp-black sp-padding", "data-horizontal": "40","data-vertical": "10%","data-show-transition": "left","data-hide-transition": "left" ,"{s.titolo}"}
+                                
+                                p { class: "sp-layer sp-white sp-padding", "data-horizontal": "40","data-vertical": "22%","data-show-transition": "left","data-hide-transition": "left" , "{s.caption}" }
+                                p { class: "sp-layer sp-white sp-padding", "data-horizontal": "40","data-vertical": "34%","data-show-transition": "left","data-hide-transition": "left" , "{s.testo}" }
+                            },
+                        
                         }
+                        
                     }
                 }
+            }
             },
             _ => rsx! { p { "Caricamento in corso..." } }
         }
@@ -291,12 +297,10 @@ fn ElencoSliders() -> Element {
 #[component]
 fn FastImage(name: String) -> Element {
     let mut img_data = use_signal(|| String::new());
-
-    // Cloniamo 'name' qui per la risorsa, lasciando l'originale intatto per il rsx!
-    let name_for_resource = name.clone();
+    let n_resource = name.clone();
 
     use_resource(move || {
-        let n = name_for_resource.clone();
+        let n = n_resource.clone();
         async move {
             if let Ok(b64) = get_single_image_b64(n).await {
                 img_data.set(b64);
@@ -304,25 +308,17 @@ fn FastImage(name: String) -> Element {
         }
     });
 
-    if img_data().is_empty() {
-        rsx! { 
-            div { 
-                class: "sp-image", 
-                style: "width: 250px; height: 500px; background: #222;", 
-                "..." 
-            } 
-        }
-    } else {
-        rsx! { 
+    rsx! { 
+        // Se l'immagine c'è, la mostriamo senza classi dello slider
+        if !img_data().is_empty() {
             img { 
-                // Ora 'name' è disponibile perché non è stato "mosso" sopra
                 key: "{name}",
-                class: "sp-image", 
                 src: "{img_data}", 
-                width: "250",
-                "loading": "eager",
-                style: "max-width: 110%; height: 110%;",
-            } 
+                // Usiamo stili brutali per essere sicuri che esistano
+                style: "width: 960px; height: 500px; border: 5px solid red; display: block !important; visibility: visible !important; opacity: 1 !important;"
+            }
+        } else {
+            div { style: "max-width: 110%; height: 110%; object-fit: cover; object-position: center; display: block;", "Caricamento {name}..." }
         }
     }
 }
