@@ -233,31 +233,22 @@ pub async fn get_single_image_b64(name: String) -> Result<String, ServerFnError>
 fn ElencoSliders() -> Element {
     let sliders_res = use_resource(move || get_sliders_db());
 
-    // Spostiamo la logica di inizializzazione in una funzione richiamabile
     let inizializza_slider = move |_| {
         spawn(async move {
             let _ = eval(r#"
-                console.log("🔍 Controllo DOM in corso...");
                 var $slider = $('#example1');
-                
-                console.log("Elementi trovati:", $slider.length);
-                console.log("HTML interno:", $slider.html() ? $slider.html().substring(0, 100) : "VUOTO");
-                console.log("jQuery presente:", typeof jQuery !== 'undefined');
-                console.log("Plugin SliderPro presente:", typeof $.fn.sliderPro !== 'undefined');
-
                 if ($slider.length > 0 && typeof $.fn.sliderPro !== 'undefined') {
-                    console.log("🚀 TENTATIVO INIZIALIZZAZIONE...");
                     $slider.sliderPro({
                         width: 960,
                         height: 500,
                         arrows: true,
+                        buttons: true,
                         autoplay: true,
                         autoHeight: false,
-                        forceSize: 'fullWidth'
+                        forceSize: 'none', // Fondamentale per non andare a tutto schermo
+                        imageScaleMode: 'cover',
+                        centerImage: true
                     });
-                    console.log("✅ Chiamata sliderPro effettuata");
-                } else {
-                    console.error("❌ Errore critico: Slider o Plugin non trovati");
                 }
             "#);
         });
@@ -266,31 +257,40 @@ fn ElencoSliders() -> Element {
     rsx! {
         match &*sliders_res.read_unchecked() {
             Some(Ok(list)) => rsx! {
-            span {style:"  margin-top: 65%; margin-left: 28%; ",
-                div { id: "example1", class: "slider-pro",
-                    // IMPORTANTE: Quando il div appare nel DOM con i dati, 
-                    // chiamiamo l'inizializzazione
-                    onmounted: inizializza_slider, 
+                // 1. Contenitore di posizionamento (il "recinto")
+                div { 
+                    style: "width: 100%; max-width: 960px; margin: 50px auto; position: relative; clear: both;",
                     
-                    div { class: "sp-slides",
-                        for s in list {
-                            div { class: "sp-slide", key: "{s.id}",
-                                FastImage { name: s.img.clone() }
-                                h3 { class:"sp-layer sp-black sp-padding", "data-horizontal": "40","data-vertical": "10%","data-show-transition": "left","data-hide-transition": "left" ,"{s.titolo}"}
-                                
-                                p { class: "sp-layer sp-white sp-padding hide-medium-screen", "data-horizontal": "40","data-vertical": "22%","data-show-transition": "left","data-hide-transition": "left" , "{s.caption}" }
-                                p {style: "background-color:#330101;color:#ffffff;", class: "sp-layer sp-white sp-padding hide-small-screen", "data-horizontal": "40","data-vertical": "34%","data-show-transition": "left","data-hide-transition": "left" , "{s.testo}" }
-                            },
+                    // 2. Lo Slider vero e proprio
+                    div { 
+                        id: "example1", 
+                        class: "slider-pro",
+                        onmounted: inizializza_slider, 
                         
-                        }
-                        
-                    }
-                }
-            }
-            },
+                        div { class: "sp-slides",
+                            for s in list {
+                                div { class: "sp-slide", key: "{s.id}",
+                                    FastImage { name: s.img.clone() }
+                                    
+                                    h3 { class:"sp-layer sp-black sp-padding", "data-horizontal": "40","data-vertical": "10%","data-show-transition": "left","data-hide-transition": "left" ,"{s.titolo}"}
+                                    
+                                    p { class: "sp-layer sp-white sp-padding hide-medium-screen", "data-horizontal": "40","data-vertical": "22%","data-show-transition": "left","data-hide-transition": "left" , "{s.caption}" }
+                                    
+                                    p { 
+                                        style: "background-color:#330101;color:#ffffff;", 
+                                        class: "sp-layer sp-white sp-padding hide-small-screen", 
+                                        "data-horizontal": "40","data-vertical": "34%","data-show-transition": "left","data-hide-transition": "left" , 
+                                        "{s.testo}" 
+                                    }
+                                } // Chiusura sp-slide
+                            } // Chiusura ciclo for
+                        } // Chiusura sp-slides
+                    } // Chiusura example1
+                } // Chiusura contenitore 960px
+            }, // Chiusura Some(Ok(list))
             _ => rsx! { p { "Caricamento in corso..." } }
-        }
-    }
+        } // Chiusura match
+    } // Chiusura rsx!
 }
 
 #[component]
