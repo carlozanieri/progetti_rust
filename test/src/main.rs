@@ -61,6 +61,7 @@ fn App() -> Element {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS } 
         document::Link { rel: "stylesheet", href: TAILWIND_CSS }
+        document:: Meta {name:"viewport", content:"width:device-width, user-scalable:no,initial-scale:1.0, minimum-scale:1.0, maximum-scale:1.0"}
           
         Router::<Route> {}
     }
@@ -175,19 +176,19 @@ fn Casabaldini() -> Element {
     let sliders = use_resource(move || get_sliders_db());
     
    rsx! {
-        document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }   
+        
      
     
             div { class:"slider-pro", 
-            h1 { "Galleria Dinamica Casabaldini" }
+            //h1 { "Galleria Dinamica Casabaldini" }
             
-            p { 
-                if cfg!(target_arch = "wasm32") { 
-                    span { style: "color: green;", "✅ CLIENT ATTIVO" }
-                } else { 
-                    span { style: "color: orange;", "🏠 SERVER RENDERING" }
-                }
-            }
+            //p { 
+               // if cfg!(target_arch = "wasm32") { 
+                 //   span { style: "color: green;", "✅ CLIENT ATTIVO" }
+                //} else { 
+                //    span { style: "color: orange;", "🏠 SERVER RENDERING" }
+                //}
+            //}
 
             hr {}
             ElencoSliders {}
@@ -266,9 +267,7 @@ fn ElencoSliders() -> Element {
         match &*sliders_res.read_unchecked() {
             Some(Ok(list)) => rsx! {
             span {style:"  margin-top: 65%; margin-left: 28%; ",
-                div { 
-                    id: "example1", 
-                    class: "slider-pro",
+                div { id: "example1", class: "slider-pro",
                     // IMPORTANTE: Quando il div appare nel DOM con i dati, 
                     // chiamiamo l'inizializzazione
                     onmounted: inizializza_slider, 
@@ -279,8 +278,8 @@ fn ElencoSliders() -> Element {
                                 FastImage { name: s.img.clone() }
                                 h3 { class:"sp-layer sp-black sp-padding", "data-horizontal": "40","data-vertical": "10%","data-show-transition": "left","data-hide-transition": "left" ,"{s.titolo}"}
                                 
-                                p { class: "sp-layer sp-white sp-padding", "data-horizontal": "40","data-vertical": "22%","data-show-transition": "left","data-hide-transition": "left" , "{s.caption}" }
-                                p { class: "sp-layer sp-white sp-padding", "data-horizontal": "40","data-vertical": "34%","data-show-transition": "left","data-hide-transition": "left" , "{s.testo}" }
+                                p { class: "sp-layer sp-white sp-padding hide-medium-screen", "data-horizontal": "40","data-vertical": "22%","data-show-transition": "left","data-hide-transition": "left" , "{s.caption}" }
+                                p {style: "background-color:#330101;color:#ffffff;", class: "sp-layer sp-white sp-padding hide-small-screen", "data-horizontal": "40","data-vertical": "34%","data-show-transition": "left","data-hide-transition": "left" , "{s.testo}" }
                             },
                         
                         }
@@ -315,10 +314,10 @@ fn FastImage(name: String) -> Element {
                 key: "{name}",
                 src: "{img_data}", 
                 // Usiamo stili brutali per essere sicuri che esistano
-                style: "width: 960px; height: 500px; border: 5px solid red; display: block !important; visibility: visible !important; opacity: 1 !important;"
+                style: "width: 960px; height: 500px; border: 5px solid blue; display: block !important; visibility: visible !important; opacity: 1 !important;"
             }
         } else {
-            div { style: "max-width: 110%; height: 110%; object-fit: cover; object-position: center; display: block;", "Caricamento {name}..." }
+            div { style: "max-width: 110%; height: 100%; object-fit: cover; object-position: center; display: block;", "Caricamento {name}..." }
         }
     }
 }
