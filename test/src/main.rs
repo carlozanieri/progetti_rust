@@ -44,7 +44,7 @@ pub struct Slider {
     pub caption: String,
 }
 fn main() {
-    // Questo è il modo più pulito in 0.7 per far funzionare tutto
+        
     dioxus::launch(App);
 }
 
@@ -314,10 +314,10 @@ fn FastImage(name: String) -> Element {
                 key: "{name}",
                 src: "{img_data}", 
                 // Usiamo stili brutali per essere sicuri che esistano
-                style: "width: 960px; height: 500px; border: 5px solid blue; display: block !important; visibility: visible !important; opacity: 1 !important;"
+                style: "width: 960px; height: 520px; display: block !important; visibility: visible !important; opacity: 1 !important;"
             }
         } else {
-            div { style: "max-width: 110%; height: 100%; object-fit: cover; object-position: center; display: block;", "Caricamento {name}..." }
+            div { style: "max-width: 80%; height: 80%; object-fit: cover; object-position: center; display: block;", "Caricamento {name}..." }
         }
     }
 }
