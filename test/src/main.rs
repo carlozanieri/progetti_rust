@@ -35,7 +35,12 @@ const JQUERY_JS: Asset = asset!("/assets/home/dist/js/jquery.sliderPro.min.js");
 const ACE_RESP_JS: Asset = asset!("/assets/Ace-Menu/js/ace-responsive-menu.js");
 const ACE_JS: Asset = asset!("/assets/Ace-Menu/js/jquery-1.10.1.min.js");
 const DB_URL: &str = "postgres://carlo:treX39@57.131.31.228:5432/casabaldini";
-
+const JAVASCRIPT: &str = "$(document).ready(function () {$('#respMenu').aceResponsiveMenu({
+                 resizeWidth: '768', // Set the same in Media query       
+                 animationSpeed: 'fast', //slow, medium, fast
+                 accoridonExpAll: false //Expands all the accordion menu on click
+             });
+         });";
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
 // Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
@@ -73,12 +78,17 @@ fn App() -> Element {
         document::Link { rel: "stylesheet", href: MENU_CSS }
         document::Link { rel: "stylesheet", href: SLIDERMIN_CSS }
         document::Link { rel: "stylesheet", href: SLIDER_CSS }
+        document::Script { src: ACE_RESP_JS }
+        document::Script { src: ACE_JS }
         document::Script { src: JQUERY_JS }
+        document::Script { src: JAVASCRIPT }
         document::Link { rel: "icon", href: FAVICON }
-        document::Link { rel: "stylesheet", href: MAIN_CSS } 
-        document::Link { rel: "stylesheet", href: TAILWIND_CSS }
+        
+        document::Link { rel: "stylesheet", href: ACE_MENU_CSS }
+        document::Link { rel: "stylesheet", href: ACE_MENU_RESP }
         document:: Meta {name:"viewport", content:"width:device-width, user-scalable:no,initial-scale:1.0, minimum-scale:1.0, maximum-scale:1.0"}
-          
+        document::Link { rel: "stylesheet", href: MAIN_CSS } 
+        document::Link { rel: "stylesheet", href: TAILWIND_CSS }  
         Router::<Route> {}
     }
 }
@@ -186,8 +196,7 @@ fn Echo() -> Element {
 fn Casabaldini() -> Element {
     //let document = window().unwrap().document().unwrap();
     let sliders = use_resource(move || get_sliders_db());
-    
-   rsx! {
+    rsx! {
         
      
     
@@ -351,17 +360,18 @@ pub fn FastImage(name: String) -> Element {
 pub fn ElencoMenu() -> Element {
     let menus_res = use_resource(move || get_menu_db());
     
-     rsx! {
+    rsx! {
         match &*menus_res.read_unchecked() {
             Some(Ok(menu)) => rsx! {
+            ul {id:"respMenu", class:"ace-responsive-menu", "data-menu-style":"horizontal",    
             for m in menu{ 
-           li{        
-           a {href:"{m.link}"  , "{m.titolo}" }}
+           li{        //href:"{m.link}"
+           a {href:"{m.link}"  ,span{ class:"title", "{m.titolo}"},span{ class:"arrow"}  }}
            ul{ li{a { href: "https://dioxuslabs.com/learn/0.7/", "📚 Learn Dioxus" }}}
-        }
-            
+            }, //endfor
+            }, 
         
-            },_ => rsx! { p { "Caricamento in corso..." } }
+            },_ => rsx! { p { "" } }
         } // Chiusura match
     }
 }
