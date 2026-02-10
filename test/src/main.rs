@@ -28,9 +28,12 @@ const EXAMPLE_CSS: Asset = asset!("/assets/home/dist/css/examples.css");
 const MENU_CSS: Asset = asset!("/assets/menu_6/css/default.css");
 const HEADER_SVG: Asset = asset!("/assets/img/index/cafaggiolo.jpg");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
-const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
+const ACE_MENU_CSS: Asset = asset!("/assets/Ace-Menu/css/demo.css");
+const ACE_MENU_RESP: Asset = asset!("/assets/Ace-Menu/css/ace-responsive-menu.css");
+//const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
 const JQUERY_JS: Asset = asset!("/assets/home/dist/js/jquery.sliderPro.min.js");
-//const MIO_JS: Asset = asset!("/assets/home/dist/js/mio.js");
+const ACE_RESP_JS: Asset = asset!("/assets/Ace-Menu/js/ace-responsive-menu.js");
+const ACE_JS: Asset = asset!("/assets/Ace-Menu/js/jquery-1.10.1.min.js");
 const DB_URL: &str = "postgres://carlo:treX39@57.131.31.228:5432/casabaldini";
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
@@ -43,6 +46,19 @@ pub struct Slider {
     pub testo: String,
     pub caption: String,
 }
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
+#[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
+pub struct Menus {
+	pub id:       i64,
+	pub codice:   String,
+	pub radice:   String,
+	pub livello:  i64,
+	pub titolo:   String,
+	pub link:     String,
+    pub ordine:   i64,
+	
+}
+
 fn main() {
         
     dioxus::launch(App);
@@ -122,26 +138,22 @@ pub fn Blog(id: i32) -> Element {
 /// Shared navbar component.
 #[component]
 fn Navbar() -> Element {
+    
     rsx! {
-        div {
-            id: "navbar",
-            Link {
-                to: Route::Home {},
-                "Home"
-            }
-            Link {
-                to: Route::Blog { id: 1 },
-                "Blog"
-            }
-            Link {
-                to: Route::Casabaldini {  },
-                "Casabaldini"
-            }
+        div {id: "navbar",
+            
+            
+            ElencoMenu {  }
         }
 
         Outlet::<Route> {}
     }
-}
+         
+        
+    }
+       
+    
+
 
 /// Echo component that demonstrates fullstack server functions.
 #[component]
@@ -222,6 +234,21 @@ pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
 }
 
 #[server]
+pub async fn get_menu_db() -> Result<Vec<Menus>, ServerFnError> {
+    // Trasformiamo l'errore di connessione e di query in stringhe leggibili da ServerFnError
+    let pool = PgPool::connect(DB_URL)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
+
+    let rows = sqlx::query_as::<_, Menus>("SELECT id, codice,  radice,livello,titolo,link, ordine FROM menu where livello=2 and attivo= 1 order by ordine")
+        .fetch_all(&pool)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
+    println!("📡 Server: Row recuperate, invio in corso...");
+    Ok(rows)
+}
+
+#[server]
 pub async fn get_single_image_b64(name: String) -> Result<String, ServerFnError> {
     use base64::{Engine as _, engine::general_purpose};
     let path = format!("assets/img/index/{}", name);
@@ -287,14 +314,14 @@ fn ElencoSliders() -> Element {
                         } // Chiusura sp-slides
                     } // Chiusura example1
                 } // Chiusura contenitore 960px
-            }, // Chiusura Some(Ok(list))
+            }, 
             _ => rsx! { p { "Caricamento in corso..." } }
         } // Chiusura match
     } // Chiusura rsx!
 }
 
 #[component]
-fn FastImage(name: String) -> Element {
+pub fn FastImage(name: String) -> Element {
     let mut img_data = use_signal(|| String::new());
     let n_resource = name.clone();
 
@@ -316,8 +343,27 @@ fn FastImage(name: String) -> Element {
                 // Usiamo stili brutali per essere sicuri che esistano
                 style: "width: 960px; height: 520px; display: block !important; visibility: visible !important; opacity: 1 !important;"
             }
-        } else {
-            div { style: "max-width: 80%; height: 80%; object-fit: cover; object-position: center; display: block;", "Caricamento {name}..." }
-        }
+        } 
     }
 }
+
+#[component]
+pub fn ElencoMenu() -> Element {
+    let menus_res = use_resource(move || get_menu_db());
+    
+     rsx! {
+        match &*menus_res.read_unchecked() {
+            Some(Ok(menu)) => rsx! {
+            for m in menu{ 
+           li{        
+           a {href:"{m.link}"  , "{m.titolo}" }}
+           ul{ li{a { href: "https://dioxuslabs.com/learn/0.7/", "📚 Learn Dioxus" }}}
+        }
+            
+        
+            },_ => rsx! { p { "Caricamento in corso..." } }
+        } // Chiusura match
+    }
+}
+
+
