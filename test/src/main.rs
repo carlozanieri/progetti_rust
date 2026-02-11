@@ -147,20 +147,60 @@ pub fn Blog(id: i32) -> Element {
 
 /// Shared navbar component.
 #[component]
-fn Navbar() -> Element {
+pub fn Navbar() -> Element {
     
+    use_effect(move || {
+        spawn(async move {
+            // Definiamo il JS come una stringa normalissima
+            // Usando le virgolette semplici per le proprietà JS
+            let js_code = "
+                console.log('Avvio Ace Menu...');
+                var el = jQuery('#respMenu');
+                if (el.length > 0 && typeof jQuery.fn.aceResponsiveMenu !== 'undefined') {
+                    el.aceResponsiveMenu({
+                        resizeWidth: '768',
+                        animationSpeed: 'fast',
+                        accoridonExpAll: false
+                    });
+                }
+            ";
+            let _ = eval(js_code);
+        });
+    });
+
     rsx! {
-        div {id: "navbar",
+        div { class: "demo",
+            div { 
+                class: "menu-toggle", 
+                style: "position: absolute; top: -20px;",
+                button { type: "button", id: "menu-btn",
+                    span { class: "icon-bar" }
+                    span { class: "icon-bar" }
+                    span { class: "icon-bar" }
+                }
+            }
             
-            
-            ElencoMenu {  }
+            ul { 
+                id: "respMenu", 
+                class: "ace-responsive-menu", 
+                "data-menu-style": "horizontal",
+                
+                li { 
+                    a { href: "javascript:;",
+                        span { class: "title", "Home" }
+                    }
+                }
+                li { 
+                    a { href: "javascript:;",
+                        span { class: "title", "Camere" }
+                    }
+                }
+            }
         }
 
         Outlet::<Route> {}
     }
-         
-        
-    }
+}
        
     
 
