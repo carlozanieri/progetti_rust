@@ -36,7 +36,8 @@ const ACE_RESP_JS: Asset = asset!("/assets/Ace-Menu/js/ace-responsive-menu.js");
 const ACE_JS: Asset = asset!("/assets/Ace-Menu/js/jquery-1.10.1.min.js");
 const DB_URL: &str = "postgres://carlo:treX39@57.131.31.228:5432/casabaldini";
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+ 
 // Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
 pub struct Slider {
@@ -46,7 +47,8 @@ pub struct Slider {
     pub testo: String,
     pub caption: String,
 }
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
+
+#[derive(Clone, PartialEq, serde::Serialize, serde::Deserialize)] 
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
 pub struct Menus {
 	pub id:       i64,
@@ -59,7 +61,7 @@ pub struct Menus {
 	
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
+#[derive(Clone, PartialEq, serde::Serialize, serde::Deserialize)] 
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
 pub struct Submenus{
 	pub id:       i64,
@@ -70,6 +72,12 @@ pub struct Submenus{
 	pub link:     String,
     pub ordine:   i64,
 	
+}
+
+#[derive(Props, Clone, PartialEq)]
+pub struct NavItemProps {
+    m: Menus,
+    subitems: Vec<Submenus>,
 }
 
 fn main() {
@@ -159,38 +167,6 @@ pub fn Navbar() -> Element {
     let menu_res = use_resource(move || get_menu_db());
     let submenu_res = use_resource(move || get_submenu_db());
 
-    use_effect(move || {
-        // MODIFICA CRUCIALE: Controlliamo che ENTRAMBE le risorse siano caricate
-        let menu_ready = menu_res.read_unchecked().as_ref().map(|r| r.is_ok()).unwrap_or(false);
-        let submenu_ready = submenu_res.read_unchecked().as_ref().map(|r| r.is_ok()).unwrap_or(false);
-
-        if menu_ready && submenu_ready {
-            spawn(async move {
-                // Aumentiamo leggermente il timeout a 150ms per sicurezza
-                let js_code = "
-    setTimeout(function() {
-        var $menu = jQuery('#respMenu');
-        if ($menu.length > 0 && typeof jQuery.fn.aceResponsiveMenu !== 'undefined') {
-            console.log('Reset e Inizializzazione Ace Menu...');
-            
-            // 1. Rimuoviamo eventuali classi o eventi residui che bloccano il plugin
-            $menu.find('*').off(); 
-            $menu.removeClass('responsive-menu'); // Classe che spesso aggiungono questi plugin
-            
-            // 2. Inizializzazione
-            $menu.aceResponsiveMenu({
-                resizeWidth: '768',
-                animationSpeed: 'fast',
-                accoridonExpAll: false
-            });
-        }
-    }, 200); // Aumentiamo a 200ms per dare tempo al DOM di stabilizzarsi
-";
-                let _ = eval(js_code);
-            });
-        }
-    });
-
     rsx! {
         div { class: "demo",
             div { class: "menu-toggle", style: "position: absolute; top: -20px;",
@@ -201,28 +177,32 @@ pub fn Navbar() -> Element {
                 }
             }
             
-            ul { id: "respMenu", class: "ace-responsive-menu", "data-menu-style": "horizontal",
+            ul { id: "respMenu", class: "dioxus-menu",
+                // Inizio blocco dati
                 {
                     match (&*menu_res.read_unchecked(), &*submenu_res.read_unchecked()) {
-                        (Some(Ok(parents)), Some(Ok(children))) => {
+                        (Some(Ok(parents)), Some(Ok(all_subitems))) => {
                             rsx! {
                                 for m in parents {
-                                    li {
-                                        a { href: "javascript:;",
-                                            span { class: "title", "{m.titolo}" }
-                                            span { class: "arrow" }
-                                        }
-                                        // Ace Menu spesso richiede che l'ul del sottomenu abbia una classe specifica
-                                        ul { class: "sub-menu", 
-                                            for s in children.iter().filter(|s| s.radice.trim() == m.codice.trim()) {
-    li { a { href: "{s.link}", "{s.titolo}" } }
+    {
+        // Dentro il ciclo for m in parents...
+let figli = all_subitems.iter()
+    .filter(|s| s.radice.trim() == m.codice.trim())
+    .cloned()
+    .collect::<Vec<Submenus>>();
+
+rsx! { 
+    NavItem { 
+        key: "{m.id}", 
+        m: m.clone(), 
+        subitems: figli // Usa il nuovo nome qui
+    } 
 }
-                                        }
-                                    }
-                                }
+    }
+}
                             }
-                        }
-                        _ => rsx! { li { "Caricamento menu..." } }
+                        },
+                        _ => rsx! { li { "Caricamento..." } }
                     }
                 }
             }
@@ -460,4 +440,31 @@ pub fn ElencoMenu() -> Element {
     }
 }
 
+
+
+pub fn NavItem(props: NavItemProps) -> Element {
+    let mut is_open = use_signal(|| false);
+
+    rsx! {
+        li {
+            style: "position: relative; list-style: none; display: inline-block; margin-right: 20px;",
+            onmouseenter: move |_| is_open.set(true),
+            onmouseleave: move |_| is_open.set(false),
+            
+            a { href: "javascript:;", "{props.m.titolo}" }
+
+            if is_open() && !props.subitems.is_empty() {
+                ul { 
+                    style: "position: absolute; background: white; border: 1px solid #ccc; z-index: 100; padding: 10px; margin: 0;",
+                    for s in props.subitems {
+                        li { key: "{s.id}",
+                            style: "list-style: none;",
+                            a { href: "{s.link}", "{s.titolo}" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 

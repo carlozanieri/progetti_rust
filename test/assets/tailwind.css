@@ -239,6 +239,25 @@
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
 }
+.nav-item-container {
+  position: relative;
+  list-style: none;
+}
+.sub-menu {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  min-width: 200px;
+  background: rgb(132, 73, 73);
+  z-index: 1000;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.sub-menu.hidden {
+  display: none;
+}
+.sub-menu.visible {
+  display: block;
+}
 @property --tw-rotate-x {
   syntax: "*";
   inherits: false;
