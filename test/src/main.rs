@@ -35,12 +35,7 @@ const JQUERY_JS: Asset = asset!("/assets/home/dist/js/jquery.sliderPro.min.js");
 const ACE_RESP_JS: Asset = asset!("/assets/Ace-Menu/js/ace-responsive-menu.js");
 const ACE_JS: Asset = asset!("/assets/Ace-Menu/js/jquery-1.10.1.min.js");
 const DB_URL: &str = "postgres://carlo:treX39@57.131.31.228:5432/casabaldini";
-const JAVASCRIPT: &str = "$(document).ready(function () {$('#respMenu').aceResponsiveMenu({
-                 resizeWidth: '768', // Set the same in Media query       
-                 animationSpeed: 'fast', //slow, medium, fast
-                 accoridonExpAll: false //Expands all the accordion menu on click
-             });
-         });";
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
 // Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
@@ -54,6 +49,19 @@ pub struct Slider {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
 pub struct Menus {
+	pub id:       i64,
+	pub codice:   String,
+	pub radice:   String,
+	pub livello:  i64,
+	pub titolo:   String,
+	pub link:     String,
+    pub ordine:   i64,
+	
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)] 
+#[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
+pub struct Submenus{
 	pub id:       i64,
 	pub codice:   String,
 	pub radice:   String,
@@ -81,7 +89,7 @@ fn App() -> Element {
         document::Script { src: ACE_RESP_JS }
         document::Script { src: ACE_JS }
         document::Script { src: JQUERY_JS }
-        document::Script { src: JAVASCRIPT }
+        
         document::Link { rel: "icon", href: FAVICON }
         
         document::Link { rel: "stylesheet", href: ACE_MENU_CSS }
@@ -148,31 +156,44 @@ pub fn Blog(id: i32) -> Element {
 /// Shared navbar component.
 #[component]
 pub fn Navbar() -> Element {
-    
+    let menu_res = use_resource(move || get_menu_db());
+    let submenu_res = use_resource(move || get_submenu_db());
+
     use_effect(move || {
-        spawn(async move {
-            // Definiamo il JS come una stringa normalissima
-            // Usando le virgolette semplici per le proprietà JS
-            let js_code = "
-                console.log('Avvio Ace Menu...');
-                var el = jQuery('#respMenu');
-                if (el.length > 0 && typeof jQuery.fn.aceResponsiveMenu !== 'undefined') {
-                    el.aceResponsiveMenu({
-                        resizeWidth: '768',
-                        animationSpeed: 'fast',
-                        accoridonExpAll: false
-                    });
-                }
-            ";
-            let _ = eval(js_code);
-        });
+        // MODIFICA CRUCIALE: Controlliamo che ENTRAMBE le risorse siano caricate
+        let menu_ready = menu_res.read_unchecked().as_ref().map(|r| r.is_ok()).unwrap_or(false);
+        let submenu_ready = submenu_res.read_unchecked().as_ref().map(|r| r.is_ok()).unwrap_or(false);
+
+        if menu_ready && submenu_ready {
+            spawn(async move {
+                // Aumentiamo leggermente il timeout a 150ms per sicurezza
+                let js_code = "
+    setTimeout(function() {
+        var $menu = jQuery('#respMenu');
+        if ($menu.length > 0 && typeof jQuery.fn.aceResponsiveMenu !== 'undefined') {
+            console.log('Reset e Inizializzazione Ace Menu...');
+            
+            // 1. Rimuoviamo eventuali classi o eventi residui che bloccano il plugin
+            $menu.find('*').off(); 
+            $menu.removeClass('responsive-menu'); // Classe che spesso aggiungono questi plugin
+            
+            // 2. Inizializzazione
+            $menu.aceResponsiveMenu({
+                resizeWidth: '768',
+                animationSpeed: 'fast',
+                accoridonExpAll: false
+            });
+        }
+    }, 200); // Aumentiamo a 200ms per dare tempo al DOM di stabilizzarsi
+";
+                let _ = eval(js_code);
+            });
+        }
     });
 
     rsx! {
         div { class: "demo",
-            div { 
-                class: "menu-toggle", 
-                style: "position: absolute; top: -20px;",
+            div { class: "menu-toggle", style: "position: absolute; top: -20px;",
                 button { type: "button", id: "menu-btn",
                     span { class: "icon-bar" }
                     span { class: "icon-bar" }
@@ -180,24 +201,32 @@ pub fn Navbar() -> Element {
                 }
             }
             
-            ul { 
-                id: "respMenu", 
-                class: "ace-responsive-menu", 
-                "data-menu-style": "horizontal",
-                
-                li { 
-                    a { href: "javascript:;",
-                        span { class: "title", "Home" }
-                    }
-                }
-                li { 
-                    a { href: "javascript:;",
-                        span { class: "title", "Camere" }
+            ul { id: "respMenu", class: "ace-responsive-menu", "data-menu-style": "horizontal",
+                {
+                    match (&*menu_res.read_unchecked(), &*submenu_res.read_unchecked()) {
+                        (Some(Ok(parents)), Some(Ok(children))) => {
+                            rsx! {
+                                for m in parents {
+                                    li {
+                                        a { href: "javascript:;",
+                                            span { class: "title", "{m.titolo}" }
+                                            span { class: "arrow" }
+                                        }
+                                        // Ace Menu spesso richiede che l'ul del sottomenu abbia una classe specifica
+                                        ul { class: "sub-menu", 
+                                            for s in children.iter().filter(|s| s.radice.trim() == m.codice.trim()) {
+    li { a { href: "{s.link}", "{s.titolo}" } }
+}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        _ => rsx! { li { "Caricamento menu..." } }
                     }
                 }
             }
         }
-
         Outlet::<Route> {}
     }
 }
@@ -289,12 +318,27 @@ pub async fn get_menu_db() -> Result<Vec<Menus>, ServerFnError> {
         .await
         .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
 
-    let rows = sqlx::query_as::<_, Menus>("SELECT id, codice,  radice,livello,titolo,link, ordine FROM menu where livello=2 and attivo= 1 order by ordine")
+    let mrows = sqlx::query_as::<_, Menus>("SELECT id, codice,  radice,livello,titolo,link, ordine FROM menu where livello=2 and attivo= 1 order by ordine")
         .fetch_all(&pool)
         .await
         .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
     println!("📡 Server: Row recuperate, invio in corso...");
-    Ok(rows)
+    Ok(mrows)
+}
+
+#[server]
+pub async fn get_submenu_db() -> Result<Vec<Submenus>, ServerFnError> {
+    // Trasformiamo l'errore di connessione e di query in stringhe leggibili da ServerFnError
+    let pools = PgPool::connect(DB_URL)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
+
+    let srows = sqlx::query_as::<_, Submenus>("SELECT id, codice,  radice, livello, titolo,link, ordine FROM submenu where attivo = 1 order by ordine")
+        .fetch_all(&pools)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
+    println!("📡 Server: Row recuperate, invio in corso...");
+    Ok(srows)
 }
 
 #[server]
