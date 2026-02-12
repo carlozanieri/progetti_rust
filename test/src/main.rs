@@ -21,19 +21,19 @@ enum Route {
 }
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
-const MAIN_CSS: Asset = asset!("/assets/main.css");
+const MAIN_CSS: Asset = asset!("/assets/css/main.css");
 const SLIDERMIN_CSS: Asset = asset!("/assets/home/dist/css/slider-pro.min.css");
 const SLIDER_CSS: Asset = asset!("/assets/home/dist/css/slider-pro.css");
 const EXAMPLE_CSS: Asset = asset!("/assets/home/dist/css/examples.css");
 const MENU_CSS: Asset = asset!("/assets/menu_6/css/default.css");
 const HEADER_SVG: Asset = asset!("/assets/img/index/cafaggiolo.jpg");
-const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
-const ACE_MENU_CSS: Asset = asset!("/assets/Ace-Menu/css/demo.css");
-const ACE_MENU_RESP: Asset = asset!("/assets/Ace-Menu/css/ace-responsive-menu.css");
+const TAILWIND_CSS: Asset = asset!("/assets/css/tailwind.css");
+//const ACE_MENU_CSS: Asset = asset!("/assets/Ace-Menu/css/demo.css");
+//const ACE_MENU_RESP: Asset = asset!("/assets/Ace-Menu/css/ace-responsive-menu.css");
 //const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
 const JQUERY_JS: Asset = asset!("/assets/home/dist/js/jquery.sliderPro.min.js");
-const ACE_RESP_JS: Asset = asset!("/assets/Ace-Menu/js/ace-responsive-menu.js");
-const ACE_JS: Asset = asset!("/assets/Ace-Menu/js/jquery-1.10.1.min.js");
+//const ACE_RESP_JS: Asset = asset!("/assets/Ace-Menu/js/ace-responsive-menu.js");
+//const ACE_JS: Asset = asset!("/assets/Ace-Menu/js/jquery-1.10.1.min.js");
 const DB_URL: &str = "postgres://carlo:treX39@57.131.31.228:5432/casabaldini";
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -94,14 +94,14 @@ fn App() -> Element {
         document::Link { rel: "stylesheet", href: MENU_CSS }
         document::Link { rel: "stylesheet", href: SLIDERMIN_CSS }
         document::Link { rel: "stylesheet", href: SLIDER_CSS }
-        document::Script { src: ACE_RESP_JS }
-        document::Script { src: ACE_JS }
+        //document::Script { src: ACE_RESP_JS }
+        //document::Script { src: ACE_JS }
         document::Script { src: JQUERY_JS }
         
         document::Link { rel: "icon", href: FAVICON }
         
-        document::Link { rel: "stylesheet", href: ACE_MENU_CSS }
-        document::Link { rel: "stylesheet", href: ACE_MENU_RESP }
+        //document::Link { rel: "stylesheet", href: ACE_MENU_CSS }
+        //document::Link { rel: "stylesheet", href: ACE_MENU_RESP }
         document:: Meta {name:"viewport", content:"width:device-width, user-scalable:no,initial-scale:1.0, minimum-scale:1.0, maximum-scale:1.0"}
         document::Link { rel: "stylesheet", href: MAIN_CSS } 
         document::Link { rel: "stylesheet", href: TAILWIND_CSS }  
@@ -168,7 +168,7 @@ pub fn Navbar() -> Element {
     let submenu_res = use_resource(move || get_submenu_db());
 
     rsx! {
-        div { class: "demo",
+        div { class: "sp-menu",
             div { class: "menu-toggle", style: "position: absolute; top: -20px;",
                 button { type: "button", id: "menu-btn",
                     span { class: "icon-bar" }
@@ -192,7 +192,7 @@ let figli = all_subitems.iter()
     .collect::<Vec<Submenus>>();
 
 rsx! { 
-    NavItem { 
+    NavItem {
         key: "{m.id}", 
         m: m.clone(), 
         subitems: figli // Usa il nuovo nome qui
@@ -427,7 +427,7 @@ pub fn ElencoMenu() -> Element {
     rsx! {
         match &*menus_res.read_unchecked() {
             Some(Ok(menu)) => rsx! {
-            ul {id:"respMenu", class:"ace-responsive-menu", "data-menu-style":"horizontal",    
+            ul {id:"respMenu", class:"sub-menu", "data-menu-style":"horizontal",    
             for m in menu{ 
            li{        //href:"{m.link}"
            a {href:"{m.link}"  ,span{ class:"title", "{m.titolo}"},span{ class:"arrow"}  }}

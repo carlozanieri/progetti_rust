@@ -1,25 +1,2 @@
 @import "tailwindcss";
 
-/* Stile base per il sottomenu */
-.nav-item-container {
-    position: relative;
-    list-style: none;
-}
-
-.sub-menu {
-    position: absolute;
-    left: 0;
-    top: 100%;
-    min-width: 200px;
-    background: rgb(132, 73, 73);
-    z-index: 1000;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.sub-menu.hidden {
-    display: none; /* O usa opacity: 0 e pointer-events: none per le animazioni */
-}
-
-.sub-menu.visible {
-    display: block;
-}
