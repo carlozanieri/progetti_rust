@@ -4,7 +4,12 @@ use dioxus::prelude::asset;
 //use web_sys::Url;
 use crate::document::eval;
 //use web_sys::console::count;
+mod models;
+mod components; // Questo caricherà components/mod.rs
+use crate::models::get_menu_db;
+use crate::models::get_submenu_db;
 
+use components::navbar::Navbar;
 #[cfg(not(target_arch = "wasm32"))]
 use sqlx::{PgPool, FromRow}; // Cambiato da SqlitePool a PgPool
 #[derive(Debug, Clone, Routable, PartialEq)]
@@ -104,7 +109,8 @@ fn App() -> Element {
         //document::Link { rel: "stylesheet", href: ACE_MENU_RESP }
         document:: Meta {name:"viewport", content:"width:device-width, user-scalable:no,initial-scale:1.0, minimum-scale:1.0, maximum-scale:1.0"}
         document::Link { rel: "stylesheet", href: MAIN_CSS } 
-        document::Link { rel: "stylesheet", href: TAILWIND_CSS }  
+        document::Link { rel: "stylesheet", href: TAILWIND_CSS }
+        //Navbar {}  
         Router::<Route> {}
     }
 }
@@ -160,59 +166,6 @@ pub fn Blog(id: i32) -> Element {
         }
     }
 }
-
-/// Shared navbar component.
-#[component]
-pub fn Navbar() -> Element {
-    let menu_res = use_resource(move || get_menu_db());
-    let submenu_res = use_resource(move || get_submenu_db());
-
-    rsx! {
-        div { class: "sp-menu",
-            div { class: "menu-toggle", style: "position: absolute; top: -20px;",
-                button { type: "button", id: "menu-btn",
-                    span { class: "icon-bar" }
-                    span { class: "icon-bar" }
-                    span { class: "icon-bar" }
-                }
-            }
-            
-            ul { id: "respMenu", class: "dioxus-menu",
-                // Inizio blocco dati
-                {
-                    match (&*menu_res.read_unchecked(), &*submenu_res.read_unchecked()) {
-                        (Some(Ok(parents)), Some(Ok(all_subitems))) => {
-                            rsx! {
-                                for m in parents {
-    {
-        // Dentro il ciclo for m in parents...
-let figli = all_subitems.iter()
-    .filter(|s| s.radice.trim() == m.codice.trim())
-    .cloned()
-    .collect::<Vec<Submenus>>();
-
-rsx! { 
-    NavItem {
-        key: "{m.id}", 
-        m: m.clone(), 
-        subitems: figli // Usa il nuovo nome qui
-    } 
-}
-    }
-}
-                            }
-                        },
-                        _ => rsx! { li { "Caricamento..." } }
-                    }
-                }
-            }
-        }
-        Outlet::<Route> {}
-    }
-}
-       
-    
-
 
 /// Echo component that demonstrates fullstack server functions.
 #[component]
@@ -291,35 +244,6 @@ pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
     Ok(rows)
 }
 
-#[server]
-pub async fn get_menu_db() -> Result<Vec<Menus>, ServerFnError> {
-    // Trasformiamo l'errore di connessione e di query in stringhe leggibili da ServerFnError
-    let pool = PgPool::connect(DB_URL)
-        .await
-        .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
-
-    let mrows = sqlx::query_as::<_, Menus>("SELECT id, codice,  radice,livello,titolo,link, ordine FROM menu where livello=2 and attivo= 1 order by ordine")
-        .fetch_all(&pool)
-        .await
-        .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
-    println!("📡 Server: Row recuperate, invio in corso...");
-    Ok(mrows)
-}
-
-#[server]
-pub async fn get_submenu_db() -> Result<Vec<Submenus>, ServerFnError> {
-    // Trasformiamo l'errore di connessione e di query in stringhe leggibili da ServerFnError
-    let pools = PgPool::connect(DB_URL)
-        .await
-        .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
-
-    let srows = sqlx::query_as::<_, Submenus>("SELECT id, codice,  radice, livello, titolo,link, ordine FROM submenu where attivo = 1 order by ordine")
-        .fetch_all(&pools)
-        .await
-        .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
-    println!("📡 Server: Row recuperate, invio in corso...");
-    Ok(srows)
-}
 
 #[server]
 pub async fn get_single_image_b64(name: String) -> Result<String, ServerFnError> {
@@ -440,31 +364,4 @@ pub fn ElencoMenu() -> Element {
     }
 }
 
-
-
-pub fn NavItem(props: NavItemProps) -> Element {
-    let mut is_open = use_signal(|| false);
-
-    rsx! {
-        li {
-            style: "position: relative; list-style: none; display: inline-block; margin-right: 20px;",
-            onmouseenter: move |_| is_open.set(true),
-            onmouseleave: move |_| is_open.set(false),
-            
-            a { href: "javascript:;", "{props.m.titolo}" }
-
-            if is_open() && !props.subitems.is_empty() {
-                ul { 
-                    style: "position: absolute; background: white; border: 1px solid #ccc; z-index: 100; padding: 10px; margin: 0;",
-                    for s in props.subitems {
-                        li { key: "{s.id}",
-                            style: "list-style: none;",
-                            a { href: "{s.link}", "{s.titolo}" }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
