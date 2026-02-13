@@ -9,6 +9,7 @@ mod components; // Questo caricherà components/mod.rs
 use crate::models::get_menu_db;
 use crate::models::get_submenu_db;
 
+use components::casabaldini::Casabaldini;
 use components::navbar::Navbar;
 #[cfg(not(target_arch = "wasm32"))]
 use sqlx::{PgPool, FromRow}; // Cambiato da SqlitePool a PgPool
@@ -194,30 +195,7 @@ fn Echo() -> Element {
     }
 }
 // casabaldini
-#[component]
-fn Casabaldini() -> Element {
-    //let document = window().unwrap().document().unwrap();
-    let sliders = use_resource(move || get_sliders_db());
-    rsx! {
-        
-     
-    
-            div { class:"slider-pro", 
-            //h1 { "Galleria Dinamica Casabaldini" }
-            
-            //p { 
-               // if cfg!(target_arch = "wasm32") { 
-                 //   span { style: "color: green;", "✅ CLIENT ATTIVO" }
-                //} else { 
-                //    span { style: "color: orange;", "🏠 SERVER RENDERING" }
-                //}
-            //}
 
-            hr {}
-            ElencoSliders {}
-        }
-    }
-}
 
 /// Echo the user input on the server.
 #[post("/api/echo")]
