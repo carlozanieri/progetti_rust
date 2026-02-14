@@ -6,3 +6,4 @@ pub mod elencosliders;
 pub mod fastimage;
 pub mod blog;
 pub mod echo;
+pub mod hero;
