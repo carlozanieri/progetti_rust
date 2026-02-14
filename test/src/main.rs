@@ -11,6 +11,9 @@ use crate::models::get_submenu_db;
 
 use components::casabaldini::Casabaldini;
 use components::navbar::Navbar;
+use components::blog::Blog;
+use components::echo::Echo;
+use components::hero::Hero;
 #[cfg(not(target_arch = "wasm32"))]
 use sqlx::{PgPool, FromRow}; // Cambiato da SqlitePool a PgPool
 #[derive(Debug, Clone, Routable, PartialEq)]

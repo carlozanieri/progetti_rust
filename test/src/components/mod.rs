@@ -4,3 +4,5 @@ pub mod nav_item;
 pub mod casabaldini;
 pub mod elencosliders;
 pub mod fastimage;
+pub mod blog;
+pub mod echo;
