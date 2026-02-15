@@ -3,7 +3,7 @@ use serde::{Serialize, Deserialize};
 use dioxus::prelude::asset;
 //use web_sys::Url;
 use crate::document::eval;
-//use web_sys::console::count;
+mod config;
 mod models;
 mod components; // Questo caricherà components/mod.rs
 use crate::models::get_menu_db;
@@ -29,21 +29,7 @@ enum Route {
 
 }
 
-const FAVICON: Asset = asset!("/assets/favicon.ico");
-const MAIN_CSS: Asset = asset!("/assets/css/main.css");
-const SLIDERMIN_CSS: Asset = asset!("/assets/home/dist/css/slider-pro.min.css");
-const SLIDER_CSS: Asset = asset!("/assets/home/dist/css/slider-pro.css");
-const EXAMPLE_CSS: Asset = asset!("/assets/home/dist/css/examples.css");
-const MENU_CSS: Asset = asset!("/assets/menu_6/css/default.css");
-const HEADER_SVG: Asset = asset!("/assets/img/index/cafaggiolo.jpg");
-const TAILWIND_CSS: Asset = asset!("/assets/css/tailwind.css");
-//const ACE_MENU_CSS: Asset = asset!("/assets/Ace-Menu/css/demo.css");
-//const ACE_MENU_RESP: Asset = asset!("/assets/Ace-Menu/css/ace-responsive-menu.css");
-//const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
-const JQUERY_JS: Asset = asset!("/assets/home/dist/js/jquery.sliderPro.min.js");
-//const ACE_RESP_JS: Asset = asset!("/assets/Ace-Menu/js/ace-responsive-menu.js");
-//const ACE_JS: Asset = asset!("/assets/Ace-Menu/js/jquery-1.10.1.min.js");
-const DB_URL: &str = "postgres://carlo:treX39@57.131.31.228:5432/casabaldini";
+
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
  
@@ -96,24 +82,25 @@ fn main() {
 
 #[component]
 fn App() -> Element {
+
     // 1. Definiamo l'effetto PRIMA del rsx!
     rsx! {
         document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
-        document::Link { rel: "stylesheet", href: EXAMPLE_CSS }
-        document::Link { rel: "stylesheet", href: MENU_CSS }
-        document::Link { rel: "stylesheet", href: SLIDERMIN_CSS }
-        document::Link { rel: "stylesheet", href: SLIDER_CSS }
+        document::Link { rel: "stylesheet", href: crate::config::EXAMPLE_CSS }
+        document::Link { rel: "stylesheet", href: crate::config::MENU_CSS }
+        document::Link { rel: "stylesheet", href: crate::config::SLIDERMIN_CSS }
+        document::Link { rel: "stylesheet", href: crate::config::SLIDER_CSS }
         //document::Script { src: ACE_RESP_JS }
         //document::Script { src: ACE_JS }
-        document::Script { src: JQUERY_JS }
+        document::Script { src: crate::config::JQUERY_JS }
         
-        document::Link { rel: "icon", href: FAVICON }
+        document::Link { rel: "icon", href: crate::config::FAVICON }
         
         //document::Link { rel: "stylesheet", href: ACE_MENU_CSS }
         //document::Link { rel: "stylesheet", href: ACE_MENU_RESP }
         document:: Meta {name:"viewport", content:"width:device-width, user-scalable:no,initial-scale:1.0, minimum-scale:1.0, maximum-scale:1.0"}
-        document::Link { rel: "stylesheet", href: MAIN_CSS } 
-        document::Link { rel: "stylesheet", href: TAILWIND_CSS }
+        document::Link { rel: "stylesheet", href: crate::config::MAIN_CSS } 
+        document::Link { rel: "stylesheet", href: crate::config::TAILWIND_CSS }
         //Navbar {}  
         Router::<Route> {}
     }

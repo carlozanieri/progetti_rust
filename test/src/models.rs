@@ -43,7 +43,7 @@ pub struct Slider {
 #[server]
 pub async fn get_menu_db() -> Result<Vec<Menus>, ServerFnError> {
     // Trasformiamo l'errore di connessione e di query in stringhe leggibili da ServerFnError
-    let pool = PgPool::connect(DB_URL)
+    let pool = PgPool::connect(crate::config::DB_URL)
         .await
         .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
 
@@ -58,7 +58,7 @@ pub async fn get_menu_db() -> Result<Vec<Menus>, ServerFnError> {
 #[server]
 pub async fn get_submenu_db() -> Result<Vec<Submenus>, ServerFnError> {
     // Trasformiamo l'errore di connessione e di query in stringhe leggibili da ServerFnError
-    let pools = PgPool::connect(DB_URL)
+    let pools = PgPool::connect(crate::config::DB_URL)
         .await
         .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
 
@@ -73,7 +73,7 @@ pub async fn get_submenu_db() -> Result<Vec<Submenus>, ServerFnError> {
 #[server]
 pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
     // Trasformiamo l'errore di connessione e di query in stringhe leggibili da ServerFnError
-    let pool = PgPool::connect(DB_URL)
+    let pool = PgPool::connect(crate::config::DB_URL)
         .await
         .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
 
