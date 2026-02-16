@@ -1,11 +1,7 @@
-use dioxus::prelude::*;
+use crate::prelude::*;
 pub use crate::models::get_sliders_db;
-//use components::elencosliders::ElencoSliders;
-//use components::navbar::Navbar;
 use crate::components::nav_item::NavItem;
 use crate::components::elencosliders::ElencoSliders;
-//pub use crate::models::get_menu_db;
-//pub use crate::models::get_submenu_db;
 #[component]
 pub fn Casabaldini() -> Element {
     //let document = window().unwrap().document().unwrap();

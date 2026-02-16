@@ -1,70 +1,22 @@
-use dioxus::{fullstack::reqwest::Url, prelude::*};
-use serde::{Serialize, Deserialize};
-use dioxus::prelude::asset;
-use crate::document::eval;
+use crate::prelude::*;
 mod config;
 mod models;
+mod prelude;
 mod components; // Questo caricherà components/mod.rs
-use crate::models::get_menu_db;
-use crate::models::get_submenu_db;
 use components::casabaldini::Casabaldini;
 use components::navbar::Navbar;
 use components::blog::Blog;
 use components::home::Home;
-#[cfg(not(target_arch = "wasm32"))]
-use sqlx::{PgPool, FromRow}; // Cambiato da SqlitePool a PgPool
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
 enum Route {
     #[layout(Navbar)]
     #[route("/")]
     Home {},
-    #[route("/casabaldini/")]
+    #[route("/casabaldini")]
     Casabaldini{},
     #[route("/blog/:id")]
     Blog { id: i32 },
-}
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
- // Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
-#[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
-pub struct Slider {
-    pub id: i64,
-    pub img: String,
-    pub titolo: String,
-    pub testo: String,
-    pub caption: String,
-}
-
-#[derive(Clone, PartialEq, serde::Serialize, serde::Deserialize)] 
-#[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
-pub struct Menus {
-	pub id:       i64,
-	pub codice:   String,
-	pub radice:   String,
-	pub livello:  i64,
-	pub titolo:   String,
-	pub link:     String,
-    pub ordine:   i64,
-	
-}
-
-#[derive(Clone, PartialEq, serde::Serialize, serde::Deserialize)] 
-#[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
-pub struct Submenus{
-	pub id:       i64,
-	pub codice:   String,
-	pub radice:   String,
-	pub livello:  i64,
-	pub titolo:   String,
-	pub link:     String,
-    pub ordine:   i64,
-	
-}
-
-#[derive(Props, Clone, PartialEq)]
-pub struct NavItemProps {
-    m: Menus,
-    subitems: Vec<Submenus>,
 }
 
 fn main() {
@@ -75,7 +27,7 @@ fn main() {
 #[component]
 fn App() -> Element {
 
-    // 1. Definiamo l'effetto PRIMA del rsx!
+    
     rsx! {
         document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
         document::Link { rel: "stylesheet", href: crate::config::EXAMPLE_CSS }
