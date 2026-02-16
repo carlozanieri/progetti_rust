@@ -1,13 +1,9 @@
-use dioxus::prelude::*;
-use crate::models::{Menus, Submenus};
-use crate::Route; // Importiamo l'enum Route del main
+use crate::prelude::*;
 #[derive(Props, Clone, PartialEq)]
 pub struct NavItemProps {
     pub m: Menus,
     pub subitems: Vec<Submenus>,
 }
-
-
 pub fn NavItem(props: NavItemProps) -> Element {
     let mut is_open = use_signal(|| false);
     let route: Route = use_route();

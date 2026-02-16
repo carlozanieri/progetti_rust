@@ -1,6 +1,5 @@
 /// Home page
-pub use dioxus::prelude::*;
-//pub use components::echo::Echo;
+pub use crate::prelude::*;
 pub use crate::components::hero::Hero;
 use crate::components::echo::Echo;
 #[component]

@@ -9,7 +9,7 @@ use components::blog::Blog;
 use components::home::Home;
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
-enum Route {
+pub enum Route {
     #[layout(Navbar)]
     #[route("/")]
     Home {},
