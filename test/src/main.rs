@@ -1,19 +1,16 @@
 use dioxus::{fullstack::reqwest::Url, prelude::*};
 use serde::{Serialize, Deserialize};
 use dioxus::prelude::asset;
-//use web_sys::Url;
 use crate::document::eval;
 mod config;
 mod models;
 mod components; // Questo caricherà components/mod.rs
 use crate::models::get_menu_db;
 use crate::models::get_submenu_db;
-
 use components::casabaldini::Casabaldini;
 use components::navbar::Navbar;
 use components::blog::Blog;
-use components::echo::Echo;
-use components::hero::Hero;
+use components::home::Home;
 #[cfg(not(target_arch = "wasm32"))]
 use sqlx::{PgPool, FromRow}; // Cambiato da SqlitePool a PgPool
 #[derive(Debug, Clone, Routable, PartialEq)]
@@ -26,14 +23,9 @@ enum Route {
     Casabaldini{},
     #[route("/blog/:id")]
     Blog { id: i32 },
-
 }
-
-
-
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
- 
-// Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
+ // Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
 pub struct Slider {
     pub id: i64,
@@ -90,28 +82,13 @@ fn App() -> Element {
         document::Link { rel: "stylesheet", href: crate::config::MENU_CSS }
         document::Link { rel: "stylesheet", href: crate::config::SLIDERMIN_CSS }
         document::Link { rel: "stylesheet", href: crate::config::SLIDER_CSS }
-        //document::Script { src: ACE_RESP_JS }
-        //document::Script { src: ACE_JS }
         document::Script { src: crate::config::JQUERY_JS }
-        
         document::Link { rel: "icon", href: crate::config::FAVICON }
-        
-        //document::Link { rel: "stylesheet", href: ACE_MENU_CSS }
-        //document::Link { rel: "stylesheet", href: ACE_MENU_RESP }
         document:: Meta {name:"viewport", content:"width:device-width, user-scalable:no,initial-scale:1.0, minimum-scale:1.0, maximum-scale:1.0"}
         document::Link { rel: "stylesheet", href: crate::config::MAIN_CSS } 
         document::Link { rel: "stylesheet", href: crate::config::TAILWIND_CSS }
-        //Navbar {}  
+        
         Router::<Route> {}
-    }
-}
-
-/// Home page
-#[component]
-fn Home() -> Element {
-    rsx! {
-        Hero {}
-        Echo {}
     }
 }
 
