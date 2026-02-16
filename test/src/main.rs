@@ -1,8 +1,9 @@
-use crate::prelude::*;
 mod config;
 mod models;
 mod prelude;
-mod components; // Questo caricherà components/mod.rs
+mod components;
+use crate::prelude::*;
+ // Questo caricherà components/mod.rs
 use components::casabaldini::Casabaldini;
 use components::navbar::Navbar;
 use components::blog::Blog;
