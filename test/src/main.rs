@@ -2,12 +2,14 @@ mod config;
 mod models;
 mod prelude;
 mod components;
+
 use crate::prelude::*;
  // Questo caricherà components/mod.rs
 use components::casabaldini::Casabaldini;
 use components::navbar::Navbar;
-use components::blog::Blog;
+//use components::blog::Blog;
 use components::home::Home;
+use crate::components::prenotazioni::Prenotazioni;
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
 pub enum Route {
@@ -16,8 +18,8 @@ pub enum Route {
     Home {},
     #[route("/casabaldini")]
     Casabaldini{},
-    #[route("/blog/:id")]
-    Blog { id: i32 },
+    #[route("/prenotazioni")]
+    Prenotazioni { },
 }
 
 fn main() {
@@ -40,7 +42,7 @@ fn App() -> Element {
         document:: Meta {name:"viewport", content:"width:device-width, user-scalable:no,initial-scale:1.0, minimum-scale:1.0, maximum-scale:1.0"}
         document::Link { rel: "stylesheet", href: crate::config::MAIN_CSS } 
         document::Link { rel: "stylesheet", href: crate::config::TAILWIND_CSS }
-        
+        document::Link { rel: "stylesheet", href: crate::config::POPIN_CSS }
         Router::<Route> {}
     }
 }
