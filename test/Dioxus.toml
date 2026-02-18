@@ -4,7 +4,7 @@ static_dir = "assets"
 [web.app]
 
 # HTML title tag content
-title = "test"
+title = "CasaBaldini"
 
 # include `assets` in web platform
 [web.resource]
