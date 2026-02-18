@@ -10,6 +10,7 @@ use components::navbar::Navbar;
 //use components::blog::Blog;
 use components::home::Home;
 use crate::components::prenotazioni::Prenotazioni;
+use crate::components::linkutili::Linkutili;
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
 pub enum Route {
@@ -20,6 +21,9 @@ pub enum Route {
     Casabaldini{},
     #[route("/prenotazioni")]
     Prenotazioni { },
+    #[route("/linkutili")]
+    Linkutili,
+    
 }
 
 fn main() {

@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use dioxus::{fullstack::reqwest::Url, prelude::*};
+use dioxus::{fullstack::reqwest::Url, html::textarea::rows, prelude::*};
 #[cfg(feature = "server")]
 use sqlx::{PgPool, FromRow};
 #[derive(Clone, PartialEq, serde::Serialize, serde::Deserialize)] 
@@ -39,6 +39,19 @@ pub struct Slider {
     pub testo: String,
     pub caption: String,
 }
+#[derive(Clone, PartialEq, serde::Serialize, serde::Deserialize)] 
+#[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
+pub struct Links {
+	pub id:       i64,
+	pub codice:   String,
+	pub img:      String,
+	pub titolo:   String,
+    pub descrizione:     String,
+	pub link:     String,
+    pub height:   String,
+    pub width:   String,
+	
+}
 
 #[server]
 pub async fn get_menu_db() -> Result<Vec<Menus>, ServerFnError> {
@@ -77,12 +90,12 @@ pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
         .await
         .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
 
-    let rows = sqlx::query_as::<_, Slider>("SELECT id, titolo, img, testo, caption FROM sliders")
+    let srows = sqlx::query_as::<_, Slider>("SELECT id, titolo, img, testo, caption FROM sliders")
         .fetch_all(&pool)
         .await
         .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
     println!("📡 Server: Row recuperate, invio in corso...");
-    Ok(rows)
+    Ok(srows)
 }
 
 
@@ -94,3 +107,17 @@ pub async fn get_single_image_b64(name: String) -> Result<String, ServerFnError>
     Ok(format!("data:image/jpeg;base64,{}", general_purpose::STANDARD.encode(bytes)))
 }
 
+#[server]
+pub async fn get_link_db() -> Result<Vec<Links>, ServerFnError> {
+    // Trasformiamo l'errore di connessione e di query in stringhe leggibili da ServerFnError
+    let pool = PgPool::connect(crate::config::DB_URL)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
+
+    let lrows = sqlx::query_as::<_, Links>("SELECT id, codice, img,titolo,descrizione,link, height, width FROM links ")
+        .fetch_all(&pool)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
+    println!("📡 Server: Row recuperate, invio in corso...");
+    Ok(lrows)
+}

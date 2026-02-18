@@ -1,5 +1,3 @@
-use dioxus::fullstack::headers::AccessControlAllowHeaders;
-
 use crate::prelude::*;
 
 #[component]
