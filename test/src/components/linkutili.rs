@@ -23,7 +23,7 @@ rsx! {
       }
     } 
     },
-     _ => rsx! { p { "Caricamento in corso..." } }
+     _ => rsx! { img { src: CLESSIDRA, id: "header" } }
   }
 }
 }

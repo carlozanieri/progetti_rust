@@ -1,7 +1,8 @@
+use crate::prelude::*;
 use dioxus::prelude::*;
 use crate::models::{Menus, Submenus};
 use crate::components::fastimage::FastImage;
-use dioxus::prelude::*;
+//use dioxus::prelude::*;
 use crate::components::nav_item::NavItem;
 use crate::models::get_menu_db;
 use crate::models::get_submenu_db;
@@ -75,7 +76,7 @@ pub fn ElencoSliders(dir: String) -> Element {
                     } // Chiusura example1
                 } // Chiusura contenitore 960px
             }, 
-            _ => rsx! { p { "Caricamento in corso..." } }
+            _ => rsx! { img { src: CLESSIDRA, id: "header" } }
         } // Chiusura match
     } // Chiusura rsx!
 }
