@@ -15,8 +15,11 @@ use crate::document::eval;
 use crate::models::get_sliders_db;
 
 #[component]
-pub fn ElencoSliders() -> Element {
-    let sliders_res = use_resource(move || get_sliders_db());
+pub fn ElencoSliders(dir: String) -> Element {
+    let d_resource = dir.clone();
+    let d = d_resource.clone();
+    let dir = use_signal(|| dir.to_string());
+    let sliders_res = use_resource(move || get_sliders_db(dir.cloned()));
 
     let inizializza_slider = move |_| {
         spawn(async move {
@@ -53,8 +56,8 @@ pub fn ElencoSliders() -> Element {
                         
                         div { class: "sp-slides",
                             for s in list {
-                                div { class: "sp-slide", key: "{s.id}",
-                                    FastImage { name: s.img.clone() }
+                                div { class: "sp-slide", key: "{s.id}", "{dir}",
+                                    FastImage { name: s.img.clone(), dir:{dir.clone()} }
                                     
                                     h3 { class:"sp-layer sp-black sp-padding", "data-horizontal": "40","data-vertical": "10%","data-show-transition": "left","data-hide-transition": "left" ,"{s.titolo}"}
                                     

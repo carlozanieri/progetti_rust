@@ -10,14 +10,15 @@ use dioxus::{fullstack::reqwest::Url, prelude::*};
 use serde::{Serialize, Deserialize};
 
 #[component]
-pub fn FastImage(name: String) -> Element {
+pub fn FastImage(name: String, dir: String) -> Element {
     let mut img_data = use_signal(|| String::new());
     let n_resource = name.clone();
-
+    let d_resource = dir.clone();
     use_resource(move || {
         let n = n_resource.clone();
+        let d = d_resource.clone();
         async move {
-            if let Ok(b64) = get_single_image_b64(n).await {
+            if let Ok(b64) = get_single_image_b64(n, d).await {
                 img_data.set(b64);
             }
         }

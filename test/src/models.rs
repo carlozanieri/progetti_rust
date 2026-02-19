@@ -84,25 +84,40 @@ pub async fn get_submenu_db() -> Result<Vec<Submenus>, ServerFnError> {
 }
 
 #[server]
-pub async fn get_sliders_db() -> Result<Vec<Slider>, ServerFnError> {
+pub async fn get_sliders_db(dir: String) -> Result<Vec<Slider>, ServerFnError> {
     // Trasformiamo l'errore di connessione e di query in stringhe leggibili da ServerFnError
     let pool = PgPool::connect(crate::config::DB_URL)
         .await
         .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
-
-    let srows = sqlx::query_as::<_, Slider>("SELECT id, titolo, img, testo, caption FROM sliders")
-        .fetch_all(&pool)
+if dir == "index" {
+    let pool = PgPool::connect(crate::config::DB_URL)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
+    let srows = sqlx::query_as::<_, Slider>("SELECT id, titolo, img, testo, caption FROM sliders WHERE codice = $1") .bind(dir)
+                .fetch_all(&pool)
         .await
         .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
     println!("📡 Server: Row recuperate, invio in corso...");
     Ok(srows)
+}else{
+    let pool = PgPool::connect(crate::config::DB_URL)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
+    let srows = sqlx::query_as::<_, Slider>("SELECT id, titolo, img, testo, caption FROM sliders WHERE codice2 = $1") .bind(dir)
+                .fetch_all(&pool)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
+    println!("📡 Server: Row recuperate, invio in corso...");
+    Ok(srows)
+    }
 }
 
 
 #[server]
-pub async fn get_single_image_b64(name: String) -> Result<String, ServerFnError> {
+pub async fn get_single_image_b64(name: String, dir: String) -> Result<String, ServerFnError> {
     use base64::{Engine as _, engine::general_purpose};
-    let path = format!("assets/img/index/{}", name);
+    let path = format!("assets/img/{}/{}",dir, name);
+    //let path = format!("assets/img/index/{}", name);
     let bytes = std::fs::read(path).map_err(|e| ServerFnError::new(e.to_string()))?;
     Ok(format!("data:image/jpeg;base64,{}", general_purpose::STANDARD.encode(bytes)))
 }

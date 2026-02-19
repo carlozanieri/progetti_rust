@@ -17,8 +17,9 @@ pub enum Route {
     #[layout(Navbar)]
     #[route("/")]
     Home {},
-    #[route("/casabaldini")]
-    Casabaldini{},
+    #[route("/casabaldini/:dir")]
+    Casabaldini{dir: String},
+    
     #[route("/prenotazioni")]
     Prenotazioni { },
     #[route("/linkutili")]

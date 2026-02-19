@@ -15,7 +15,7 @@ rsx! {
       div{ class:"marquee-content",
     
         for l in lista {
-        div{ FastImage { name: l.img.clone() }}
+        //div{ FastImage { name: l.img.clone() }}
 				a{ style:"color:#ffffff; font-size: 1.5em; margin-left:2%; margin-top:2%; font-weight: bold;", href:"{l.link}", img{ src:"/assets/img/links/{l.img}", width:"10%", height:"10%", alt:""},  "  ", "{l.img}","{l.titolo}" }
          //a { href: //"https://dioxuslabs.com/learn/0.7/", "📚 Learn Dioxus" }
          //a{ href:"{l.link}", img{ src:"/assets/img/links/{l.img}", width:"10%", height:"10%", alt:""},  "  ", "{l.titolo}" } 
