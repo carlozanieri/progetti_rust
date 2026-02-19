@@ -47,8 +47,8 @@ pub fn NavItem(props: NavItemProps) -> Element {
                         li { 
                             key: "{s.id}",
                             style: "list-style: none; padding: 5px 0;",
-                            Link { 
-                                to: s.link.clone(),
+                            a { 
+                                href: s.link.clone(),
                                 style: if check_active(&s.link) { 
                                     "text-decoration: none; color: #ff0000; display: block; font-weight: bold;" 
                                 } else { 
