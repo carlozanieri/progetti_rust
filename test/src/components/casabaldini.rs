@@ -1,6 +1,6 @@
 use crate::prelude::*;
 pub use crate::models::get_sliders_db;
-
+use crate::components::linkutili::Linkutili;
 use crate::components::elencosliders::ElencoSliders;
 #[component]
 pub fn Casabaldini(dir: String) -> Element {
@@ -15,6 +15,7 @@ pub fn Casabaldini(dir: String) -> Element {
             
         hr {}
             ElencoSliders {dir}
+            Linkutili {}
         }
     }
 }

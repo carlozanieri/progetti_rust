@@ -27,12 +27,21 @@ pub fn FastImage(name: String, dir: String) -> Element {
     rsx! { 
         // Se l'immagine c'è, la mostriamo senza classi dello slider
         if !img_data().is_empty() {
+            if dir == "links" {
             img { 
+                key: "{name}",
+                src: "{img_data}", 
+                // Usiamo stili brutali per essere sicuri che esistano
+                style: "width: 60px; height: 36px; display: block !important; visibility: visible !important; opacity: 1 !important;"
+            }
+            }else{
+                img { 
                 key: "{name}",
                 src: "{img_data}", 
                 // Usiamo stili brutali per essere sicuri che esistano
                 style: "width: 960px; height: 520px; display: block !important; visibility: visible !important; opacity: 1 !important;"
             }
+             }
         } 
     }
 }
