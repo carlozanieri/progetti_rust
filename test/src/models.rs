@@ -136,3 +136,4 @@ pub async fn get_link_db() -> Result<Vec<Links>, ServerFnError> {
     println!("📡 Server: Row recuperate, invio in corso...");
     Ok(lrows)
 }
+

@@ -10,22 +10,34 @@ pub fn Linkutili() -> Element {
     
 rsx! {
   match &*link_res.read_unchecked() {
-            Some(Ok(lista)) => rsx! {
-    div{ class:"marquee",
-      div{ class:"marquee-content",
-    
-        for l in lista {
-        a{ style:"color:#ffffff; font-size: 1em;  font-weight: bold;", href:"{l.link}", img{ src:"/assets/img/links/{l.img}", width:"1%", height:"1%", alt:""},  "  ",span{style:"color:#ffffff; font-size: 1.5em; font-weight: bold; width:1%; height:1%; margin-left:12%",FastImage { name: l.img.clone(), dir:{"links"} }},"{l.titolo}" }
-		    }
-      }
-    } 
+    Some(Ok(lista)) => rsx! {
+        div { class: "marquee",
+            div { class: "marquee-content",
+                for l in lista {
+                    // Se vuoi usare variabili qui dentro, devi aprire un blocco { }
+                    // Ma chiamare il componente direttamente è più pulito:
+                    a { 
+                        key: "{l.id}",
+                        href: "{l.link}",
+                        style: "color:#ffffff; font-size: 1.5em; font-weight: bold; display: inline-flex; align-items: center; margin-right: 50px;",
+                        
+                        // Il tuo componente immagine
+                        FastImage { 
+                            name: l.img.clone(), 
+                            dir: "links" 
+                        }
+
+                        // Il testo allineato
+                        span { style: "margin-left: 15px;", "{l.titolo}" }
+                    }
+                }
+            }
+        }
     },
-     _ => rsx! { img { src: CLESSIDRA, id: "header" } }
-  }
-}
+ _ => rsx! { img { src: CLESSIDRA, id: "header" } }
 }
 
-	
+}	
 
-
+}
 
