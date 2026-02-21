@@ -29,8 +29,6 @@ pub struct Submenus{
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
- 
-// Questa riga dice: aggiungi FromRow solo se NON siamo su WASM
 #[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
 pub struct Slider {
     pub id: i64,
@@ -50,6 +48,23 @@ pub struct Links {
 	pub link:     String,
     pub height:   String,
     pub width:   String,
+	
+}
+
+#[derive(Clone, PartialEq, serde::Serialize, serde::Deserialize)] 
+#[cfg_attr(not(target_arch = "wasm32"), derive(sqlx::FromRow))]
+pub struct Foods {
+	pub id:       i64,
+	pub codice:   String,
+	pub img:      String,
+	pub titolo:   String,
+    pub descrizione:     String,
+	pub link:     String,
+    pub width:   String,
+    pub height:   String,
+    pub indirizzo:   String,
+	pub telefono:    String,
+	pub apiedi:   String,
 	
 }
 
@@ -137,3 +152,17 @@ pub async fn get_link_db() -> Result<Vec<Links>, ServerFnError> {
     Ok(lrows)
 }
 
+#[server]
+pub async fn get_food_db() -> Result<Vec<Foods>, ServerFnError> {
+    // Trasformiamo l'errore di connessione e di query in stringhe leggibili da ServerFnError
+    let pool = PgPool::connect(crate::config::DB_URL)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore connessione DB: {}", e)))?;
+
+    let frows = sqlx::query_as::<_, Foods>("SELECT id, codice, img,titolo,descrizione,link,  width, height, indirizzo, telefono, apiedi FROM food ")
+        .fetch_all(&pool)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Errore query: {}", e)))?;
+    println!("📡 Server: Row recuperate, invio in corso...");
+    Ok(frows)
+}

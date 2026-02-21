@@ -10,3 +10,4 @@ pub mod hero;
 pub mod home;
 pub mod prenotazioni;
 pub mod linkutili;
+pub mod dovemangiare;

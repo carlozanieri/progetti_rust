@@ -7,6 +7,8 @@ use crate::prelude::*;
  // Questo caricherà components/mod.rs
 use components::casabaldini::Casabaldini;
 use components::navbar::Navbar;
+use crate::components::dovemangiare::Dovemangiare;
+
 //use components::blog::Blog;
 use components::home::Home;
 use crate::components::prenotazioni::Prenotazioni;
@@ -19,7 +21,8 @@ pub enum Route {
     Home {},
     #[route("/casabaldini/:dir")]
     Casabaldini{dir: String},
-    
+     #[route("/dovemangiare")]
+    Dovemangiare { },
     #[route("/prenotazioni")]
     Prenotazioni { },
     #[route("/linkutili")]
