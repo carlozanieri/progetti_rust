@@ -31,8 +31,11 @@ pub enum Route {
 }
 
 fn main() {
-        
-    dioxus::launch(App);
+    #[cfg(feature = "web")]
+    dioxus_web::launch(App);
+
+    #[cfg(feature = "mobile")]
+    dioxus_mobile::launch(App);
 }
 
 #[component]
