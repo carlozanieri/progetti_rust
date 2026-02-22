@@ -1,80 +1,57 @@
-#![allow(non_snake_case)]
-use dioxus::prelude::*;
-use serde::{Deserialize, Serialize};
+mod config;
+mod models;
+mod prelude;
+mod components;
 
-// 1. DICHIARIAMO L'ASSET (Come fa Dioxus nei progetti nuovi)
-// Questo dice a Dioxus: "Prepara questo file perché mi servirà!"
-const LAGO_IMG: Asset = asset!("/assets/img/index/lago.jpg");
+use crate::prelude::*;
+ // Questo caricherà components/mod.rs
+use components::casabaldini::Casabaldini;
+use components::navbar::Navbar;
+use crate::components::dovemangiare::Dovemangiare;
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub struct Slider {
-    pub id: i32,
-    pub titolo: String,
-    pub immagine_url: String,
+//use components::blog::Blog;
+use components::home::Home;
+use crate::components::prenotazioni::Prenotazioni;
+use crate::components::linkutili::Linkutili;
+#[derive(Debug, Clone, Routable, PartialEq)]
+#[rustfmt::skip]
+pub enum Route {
+    #[layout(Navbar)]
+    #[route("/")]
+    Home {},
+    #[route("/casabaldini/:dir")]
+    Casabaldini{dir: String},
+     #[route("/dovemangiare")]
+    Dovemangiare { },
+    #[route("/prenotazioni")]
+    Prenotazioni { },
+    #[route("/linkutili")]
+    Linkutili,
+    
 }
 
 fn main() {
-    // Non aggiungere configurazioni Axum manuali per ora.
-    // Lasciamo che LaunchBuilder faccia tutto da solo.
-    LaunchBuilder::new().launch(App);
-}
-
-fn App() -> Element {
-    rsx! {
-        div { style: "font-family: sans-serif; padding: 20px;",
-            h1 { "Galleria Dinamica Casabaldini" }
-            
-            p { 
-                if cfg!(target_arch = "wasm32") { 
-                    span { style: "color: green;", "✅ CLIENT ATTIVO" }
-                } else { 
-                    span { style: "color: orange;", "🏠 SERVER RENDERING" }
-                }
-            }
-
-            div {
-                p { "Test immagine con macro asset!:" }
-                // 2. USIAMO LA COSTANTE ASSET
-                img { src: LAGO_IMG, width: "300" }
-            }
-
-            hr {}
-            ElencoSliders {}
-        }
-    }
+        
+    dioxus::launch(App);
 }
 
 #[component]
-fn ElencoSliders() -> Element {
-    let mut sliders_res = use_resource(move || get_sliders_test());
-    let mut count = use_signal(|| 0);
+fn App() -> Element {
+
+    
     rsx! {
-        button { onclick: move |_| count += 1, "Click test: {count}" }
-        match &*sliders_res.read_unchecked() {
-            Some(Ok(list)) => rsx! {
-                div { style: "display: flex;",
-                    for s in list {
-                        div { key: "{s.id}", style: "margin: 10px;",
-                            h3 { "{s.titolo}" }
-                            // Qui usiamo la stringa che arriva dal server
-                            img { src: "{s.immagine_url}", width: "200" }
-                        }
-                    }
-                }
-            },
-            _ => rsx! { p { "Caricamento dati server..." } }
-        }
+        document::Script { src: "https://code.jquery.com/jquery-3.6.2.min.js" }
+        document::Link { rel: "stylesheet", href: crate::config::EXAMPLE_CSS }
+        document::Link { rel: "stylesheet", href: crate::config::MENU_CSS }
+        document::Link { rel: "stylesheet", href: crate::config::SLIDERMIN_CSS }
+        document::Link { rel: "stylesheet", href: crate::config::SLIDER_CSS }
+        document::Script { src: crate::config::JQUERY_JS }
+        document::Link { rel: "icon", href: crate::config::FAVICON }
+        document:: Meta {name:"viewport", content:"width:device-width, user-scalable:no,initial-scale:1.0, minimum-scale:1.0, maximum-scale:1.0"}
+        document::Link { rel: "stylesheet", href: crate::config::MAIN_CSS } 
+        document::Link { rel: "stylesheet", href: crate::config::TAILWIND_CSS }
+        document::Link { rel: "stylesheet", href: crate::config::POPIN_CSS }
+        Router::<Route> {}
     }
 }
 
-#[server]
-pub async fn get_sliders_test() -> Result<Vec<Slider>, ServerFnError> {
-    Ok(vec![
-        Slider {
-            id: 1,
-            titolo: "Vista dal Server".to_string(),
-            // Per il server usiamo il percorso che Dioxus si aspetta dopo la build
-            immagine_url: LAGO_IMG.to_string(), 
-        },
-    ])
-}

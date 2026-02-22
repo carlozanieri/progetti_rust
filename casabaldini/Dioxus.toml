@@ -1,13 +1,14 @@
 [application]
 asset_dir = "assets"
+static_dir = "assets"
 [web.app]
 
 # HTML title tag content
-title = "casabaldini"
+title = "CasaBaldini"
 
 # include `assets` in web platform
 [web.resource]
-
+#include = ["assets"]
 # Additional CSS style files
 style = []
 
