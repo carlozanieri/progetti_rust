@@ -35,14 +35,15 @@ rsx! {
             for l in lista {
                 div { 
                     style: "display: flex; align-items: center; margin-top: 5%; margin-left: 2%;",
-                    img { 
-                        style: "width: 10%; margin-right: 10px;", 
-                        src: TEL_JPG 
-                    }
+                    FastImage { 
+                            name: l.img.clone(), 
+                            dir: "ristoranti" 
+                        }
                     span { style: "font-size: 1.5em; color: #000000;",
-                        "Telefonando al "
-                        b{ "{l.telefono}"}
+                        b{"{l.titolo}"},",   "," ➡️ {l.indirizzo}","   ","  📞 {l.telefono}","   ", br{}" 🚶‍♀️ Raggiungibile a piedi: { l.apiedi}"
+                        
                     }
+
                 }
                 br {}
             }   
