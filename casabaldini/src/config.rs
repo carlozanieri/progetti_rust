@@ -14,4 +14,5 @@ pub const DB_URL: &str = "postgres://carlo:treX39@57.131.31.228:5432/casabaldini
 pub const POPIN_CSS: Asset = asset!("/assets/css/popin.css");
 pub const TEL_JPG: Asset = asset!("/assets/img/telefono_4.jpg"); 
 pub const MAIL_JPG: Asset = asset!("/assets/img/email_3.jpg");
- pub const CLESSIDRA: Asset = asset!("/assets/clessidra.gif");   
+pub const CLESSIDRA: Asset = asset!("/assets/clessidra.gif");   
+

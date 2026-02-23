@@ -458,5 +458,55 @@ ul[data-menu-style="vertical"] li a:hover {
 
 /* Responsive Menu Styles
 ----------------------------------------*/
-/*Note: change the max-width asper your requirment and change the same in aceResponsiveMenu({resizeWidth: "768" }) function*/
+/* Stile base per Desktop */
+.nav-links {
+    display: flex;
+    list-style: none;
+}
 
+.nav-hamburger {
+    display: none; /* Nascosto su desktop */
+    font-size: 2rem;
+    background: none;
+    border: none;
+    color: white;
+}
+
+/* Magia per Mobile (sotto i 768px) */
+@media (max-width: 768px) {
+    .nav-hamburger {
+        display: block; /* Appare l'hamburger */
+    }
+
+    .nav-links {
+        display: none; /* Nascondiamo i link normali */
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        background-color: #333;
+        padding: 20px;
+    }
+
+    .nav-links.open {
+        display: flex; /* Appaiono solo se cliccato l'hamburger */
+    }
+}
+/* Su schermi piccoli */
+@media (max-width: 768px) {
+    .dioxus-menu {
+        display: none; /* Nascosto di base */
+        flex-direction: column;
+        width: 100%;
+        background: #222; /* Colore di sfondo menu mobile */
+    }
+
+    .dioxus-menu.show {
+        display: block; /* Appare quando clicchi il bottone */
+    }
+    
+    .menu-toggle {
+        display: block !important; /* Forza la visibilità del bottone */
+    }
+}
