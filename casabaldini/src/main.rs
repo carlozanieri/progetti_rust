@@ -55,6 +55,16 @@ fn App() -> Element {
         document::Link { rel: "stylesheet", href: crate::config::TAILWIND_CSS }
         document::Link { rel: "stylesheet", href: crate::config::POPIN_CSS }
         document::Link { rel: "manifest", href: "/assets/manifest.json" }
+        document::Link { rel: "manifest", href: "/assets/manifest.json" }
+
+        // Impedisce al telefono di "zoomare fuori" e rende il menu della giusta dimensione
+        document::Meta {
+            name: "viewport",
+            content: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no",
+        }
+
+        // Se hai un'icona specifica per Apple (opzionale ma consigliato)
+        document::Link { rel: "apple-touch-icon", href: "/assets/icon-192.png" }
         Router::<Route> {}
     }
 }

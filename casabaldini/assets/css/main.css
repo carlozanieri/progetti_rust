@@ -458,7 +458,7 @@ ul[data-menu-style="vertical"] li a:hover {
 
 /* Responsive Menu Styles
 ----------------------------------------*/
-/* Stile base per Desktop */
+
 .nav-links {
     display: flex;
     list-style: none;
