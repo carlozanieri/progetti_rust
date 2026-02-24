@@ -48,7 +48,7 @@ pub fn ElencoSliders(dir: String) -> Element {
             Some(Ok(list)) => rsx! {
                 // 1. Contenitore di posizionamento (il "recinto")
                 div {
-                    style: "width: 100%; max-width: 960px; margin: 50px auto; position: relative; clear: both;",
+                    style: "width: 100%; max-width: 920px; margin: 50px auto; position: relative; clear: both;",
 
                     div { id: "example1", class: "slider-pro", onmounted: inizializza_slider,
 
@@ -64,7 +64,7 @@ pub fn ElencoSliders(dir: String) -> Element {
                                         "data-show-transition": "left",
                                         "data-hide-transition": "left", // Chiusura ciclo for
                                         "{s.titolo}" // Chiusura example1
-                                    } // Chiusura contenitore 960px
+                                    } // Chiusura contenitore 960px // Chiusura contenitore 960px
 
                                     p {
                                         class: "sp-layer sp-white sp-padding hide-medium-screen",
@@ -84,11 +84,11 @@ pub fn ElencoSliders(dir: String) -> Element {
                                         "data-hide-transition": "left",
                                         "{s.testo}"
                                     }
-                                } // Chiusura sp-slide
-                            } // Chiusura ciclo for
-                        } // Chiusura sp-slides
-                    } // Chiusura example1
-                } // Chiusura contenitore 960px
+                                } // Chiusura sp-slide // Chiusura sp-slide
+                            } // Chiusura ciclo for // Chiusura ciclo for
+                        } // Chiusura sp-slides // Chiusura sp-slides
+                    } // Chiusura example1 // Chiusura example1
+                } // Chiusura contenitore 960px // Chiusura contenitore 960px
             },
             _ => rsx! {
                 img { src: CLESSIDRA, id: "header" }
