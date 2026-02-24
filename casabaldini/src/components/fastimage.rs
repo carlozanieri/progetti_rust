@@ -24,24 +24,24 @@ pub fn FastImage(name: String, dir: String) -> Element {
         }
     });
 
-    rsx! { 
+    rsx! {
         // Se l'immagine c'è, la mostriamo senza classi dello slider
         if !img_data().is_empty() {
             if dir == "links" || dir == "ristoranti" {
-            img { 
-                key: "{name}",
-                src: "{img_data}", 
-                // Usiamo stili brutali per essere sicuri che esistano
-                style: "width: 90px; height: 56px; display: block !important; visibility: visible !important; opacity: 1 !important;"
+                img {
+                    key: "{name}",
+                    src: "{img_data}",
+                    // Usiamo stili brutali per essere sicuri che esistano
+                    style: "width: 90px; height: 56px; display: block !important; visibility: visible !important; opacity: 1 !important;",
+                }
+            } else {
+                img {
+                    key: "{name}",
+                    src: "{img_data}",
+                    // Usiamo stili brutali per essere sicuri che esistano
+                    style: "width: 920px; height: 520px; display: block !important; visibility: visible !important; opacity: 1 !important;",
+                }
             }
-            }else{
-                img { 
-                key: "{name}",
-                src: "{img_data}", 
-                // Usiamo stili brutali per essere sicuri che esistano
-                style: "width: 960px; height: 520px; display: block !important; visibility: visible !important; opacity: 1 !important;"
-            }
-             }
-        } 
+        }
     }
 }
