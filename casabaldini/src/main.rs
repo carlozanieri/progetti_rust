@@ -52,6 +52,7 @@ fn App() -> Element {
             content: "width:device-width, user-scalable:no,initial-scale:1.0, minimum-scale:1.0, maximum-scale:1.0",
         }
         document::Link { rel: "stylesheet", href: crate::config::MAIN_CSS }
+        document::Link { rel: "stylesheet", href: crate::config::EXAMPLE_CSS }
         document::Link { rel: "stylesheet", href: crate::config::TAILWIND_CSS }
         document::Link { rel: "stylesheet", href: crate::config::POPIN_CSS }
         document::Link { rel: "manifest", href: "/assets/manifest.json" }
