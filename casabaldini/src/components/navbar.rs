@@ -9,7 +9,7 @@ pub fn Navbar() -> Element {
     let menu_res = use_resource(move || get_menu_db());
     let submenu_res = use_resource(move || get_submenu_db());
     
-    // Stato per l'apertura su mobile
+    // Stato per l'apertura su mobile\
     let mut is_open = use_signal(|| false);
 
     rsx! {

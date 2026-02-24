@@ -47,36 +47,52 @@ pub fn ElencoSliders(dir: String) -> Element {
         match &*sliders_res.read_unchecked() {
             Some(Ok(list)) => rsx! {
                 // 1. Contenitore di posizionamento (il "recinto")
-                div { 
+                div {
                     style: "width: 100%; max-width: 960px; margin: 50px auto; position: relative; clear: both;",
-                    
-                    div { 
-                        id: "example1", 
-                        class: "slider-pro",
-                        onmounted: inizializza_slider, 
-                        
+
+                    div { id: "example1", class: "slider-pro", onmounted: inizializza_slider,
+
                         div { class: "sp-slides",
                             for s in list {
-                                div { class: "sp-slide", key: "{s.id}", "{dir}",
-                                    FastImage { name: s.img.clone(), dir:{dir.clone()} }
-                                    
-                                    h3 { class:"sp-layer sp-black sp-padding", "data-horizontal": "40","data-vertical": "10%","data-show-transition": "left","data-hide-transition": "left" ,"{s.titolo}"}
-                                    
-                                    p { class: "sp-layer sp-white sp-padding hide-medium-screen", "data-horizontal": "40","data-vertical": "22%","data-show-transition": "left","data-hide-transition": "left" , "{s.caption}" }
-                                    
-                                    p { 
-                                        style: "background-color:#330101;color:#ffffff;", 
-                                        class: "sp-layer sp-white sp-padding hide-small-screen", 
-                                        "data-horizontal": "40","data-vertical": "34%","data-show-transition": "left","data-hide-transition": "left" , 
-                                        "{s.testo}" 
+                                div { class: "sp-slide", key: "{s.id}",
+                                    FastImage { name: s.img.clone(), dir: {dir.clone()} }
+
+                                    h3 {
+                                        class: "sp-layer sp-black sp-padding",
+                                        "data-horizontal": "40",
+                                        "data-vertical": "10%",
+                                        "data-show-transition": "left",
+                                        "data-hide-transition": "left", // Chiusura ciclo for
+                                        "{s.titolo}" // Chiusura example1
+                                    } // Chiusura contenitore 960px
+
+                                    p {
+                                        class: "sp-layer sp-white sp-padding hide-medium-screen",
+                                        "data-horizontal": "40",
+                                        "data-vertical": "22%",
+                                        "data-show-transition": "left",
+                                        "data-hide-transition": "left",
+                                        "{s.caption}"
+                                    }
+
+                                    p {
+                                        style: "background-color:#330101;color:#ffffff;",
+                                        class: "sp-layer sp-white sp-padding hide-small-screen",
+                                        "data-horizontal": "40",
+                                        "data-vertical": "34%",
+                                        "data-show-transition": "left",
+                                        "data-hide-transition": "left",
+                                        "{s.testo}"
                                     }
                                 } // Chiusura sp-slide
                             } // Chiusura ciclo for
                         } // Chiusura sp-slides
                     } // Chiusura example1
                 } // Chiusura contenitore 960px
-            }, 
-            _ => rsx! { img { src: CLESSIDRA, id: "header" } }
+            },
+            _ => rsx! {
+                img { src: CLESSIDRA, id: "header" }
+            },
         } // Chiusura match
     } // Chiusura rsx!
 }
