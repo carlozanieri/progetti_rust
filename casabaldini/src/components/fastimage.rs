@@ -39,7 +39,7 @@ pub fn FastImage(name: String, dir: String) -> Element {
                     key: "{name}",
                     src: "{img_data}",
                     // Usiamo stili brutali per essere sicuri che esistano
-                    style: "width: 920px; height: 520px; display: block !important; visibility: visible !important; opacity: 1 !important;",
+                    style: "width: 100%; height: 100%; display: block !important; visibility: visible !important; opacity: 1 !important;",
                 }
             }
         }
