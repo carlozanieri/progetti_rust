@@ -103,10 +103,10 @@
 </style>
 {% load static %}
 
-<div class="popin" style="background-image:url({% static 'beb/bg.png'%}); background-repeat:repeat;">    
+<div class="popin" style="background-image: url({BACK_IMG}); background-repeat: repeat;">    
     <input id="popin_check_1" type="checkbox" class="popin_check" hidden checked="true" />
     <label class="layer fadeIn" for="popin_check_1"></label>
-    <div class="content fadeIn" style="background-image:url({% static 'beb/bg.png'%}); background-repeat:repeat;">
+    <div class="content fadeIn" style="background-image:url('/assets/bgblack.png'); background-repeat:repeat;">
         <div class="header">Dove Mangiare<label class="close_popin" for="popin_check_1">X</label></div>
         <div class="main">
         {% for food in foods %}
