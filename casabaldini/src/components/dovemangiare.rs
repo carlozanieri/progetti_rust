@@ -9,53 +9,55 @@ pub fn Dovemangiare() -> Element {
 rsx! {
     match &*food_res.read_unchecked() {
         Some(Ok(lista)) => rsx! {
-            div {
-                class: "popin",
-                style: "background-image: url({BACK_IMG}); background-repeat: repeat;",
-
-                input {
-                    id: "popin_check_1",
-                    "type": "checkbox",
-                    class: "popin_check",
-                    hidden: true,
-                    checked: "true",
-                }
-
-                label { class: "layer fadeIn", "for": "popin_check_1" }
-
+            body { style: "background-image: url({BACK_IMG}); background-repeat: repeat;",
                 div {
-                    class: "content fadeIn",
+                    class: "popin",
                     style: "background-image: url({BACK_IMG}); background-repeat: repeat;",
 
-                    div { class: "header",
-                        "Dove mangiare"
-                        label { class: "close_popin", "for": "popin_check_1", "X" }
+                    input {
+                        id: "popin_check_1",
+                        "type": "checkbox",
+                        class: "popin_check",
+                        hidden: true,
+                        checked: "true",
                     }
 
-                    div { class: "main",
-                        for l in lista {
-                            div { style: "display: flex; align-items: center; margin-top: 5%; margin-left: 2%;",
-                                FastImage { name: l.img.clone(), dir: "ristoranti" }
-                                span { style: "font-size: 1.5em; color: #fefefe;",
-                                    b { "{l.titolo}" }
-                                    ",   "
-                                    " ➡️ {l.indirizzo}"
-                                    "   "
-                                    "  📞 {l.telefono}"
-                                    "   "
-                                    br {}
-                                    " 🚶‍♀️ Raggiungibile a piedi: { l.apiedi}"
+                    label { class: "layer fadeIn", "for": "popin_check_1" }
+
+                    div {
+                        class: "content fadeIn",
+                        style: "background-image: url({BACK_IMG}); background-repeat: repeat;",
+
+                        div { class: "header",
+                            "Dove mangiare"
+                            label { class: "close_popin", "for": "popin_check_1", "X" }
+                        }
+
+                        div { class: "main",
+                            for l in lista {
+                                div { style: "display: flex; align-items: center; margin-top: 5%; margin-left: 2%;",
+                                    FastImage { name: l.img.clone(), dir: "ristoranti" }
+                                    span { style: "font-size: 1.5em; color: #fefefe;",
+                                        b { "{l.titolo}" }
+                                        ",   "
+                                        " ➡️ {l.indirizzo}"
+                                        "   "
+                                        "  📞 {l.telefono}"
+                                        "   "
+                                        br {}
+                                        " 🚶‍♀️ Raggiungibile a piedi: { l.apiedi}"
+
+                                    }
 
                                 }
-
+                                br {}
                             }
-                            br {}
                         }
-                    }
 
-                    // In Dioxus, per le rotte interne, usiamo il componente Link
-                    // invece del tag <a> per non ricaricare la pagina
-                    Link { class: "modal-button", to: Route::Home {}, "HOME" }
+                        // In Dioxus, per le rotte interne, usiamo il componente Link
+                        // invece del tag <a> per non ricaricare la pagina
+                        Link { class: "modal-button", to: Route::Home {}, "HOME" }
+                    }
                 }
             }
         },
