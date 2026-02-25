@@ -1,7 +1,8 @@
 /* App-wide styling */
 body {
-    background:url("/assets/bg.png") no-repeat center center fixed;
-    /*background-color: #0f1116;*/
+    background-image: url('/assets/bgblack.png') 90px 0 no-repeat;
+    /*background-image: url('/assets/bgblack.png');
+    background-color: #2a0006;*/
     color: #ffffff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 20px;
@@ -511,3 +512,4 @@ ul[data-menu-style="vertical"] li a:hover {
         display: block !important; /* Forza la visibilità del bottone */
     }
 }
+

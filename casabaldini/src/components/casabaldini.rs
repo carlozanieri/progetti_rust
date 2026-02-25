@@ -10,12 +10,13 @@ pub fn Casabaldini(dir: String) -> Element {
     //let d = d_resource.clone();
     let sliders = use_resource(move || get_sliders_db(dir.cloned()));
     rsx! {
-            
-            div { class:"slider-pro", 
-            
-        hr {}
-            ElencoSliders {dir}
+
+        div { class: "slider-pro",
+
+            hr {}
+            ElencoSliders { dir }
             Linkutili {}
         }
+
     }
 }
