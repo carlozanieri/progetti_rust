@@ -20,7 +20,7 @@ pub fn Hero() -> Element {
             img {
                 src: HEADER_SVG,
                 id: "header",
-                style: "width: 50%; height: auto;",
+                style: "width: 70%; height: auto;",
             }
         
         }
