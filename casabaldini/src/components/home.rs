@@ -11,8 +11,9 @@ pub fn Home() -> Element {
     rsx! {
         body {
             style: "background-image: url({BACK_IMG}); background-repeat: repeat;",
-            Casabaldini { dir: "index" }
-                //Echo {}
+            Hero {}
+                //Casabaldini { dir: "index" }
+        //Echo {}
         // Linkutili {}
         }
     }

@@ -18,7 +18,7 @@ body {
 
 #links {
     width: 400px;
-    text-align: left;
+    text-align: center;
     font-size: x-large;
     color: rgb(109, 109, 18);
     display: flex;
@@ -27,10 +27,11 @@ body {
 
 #links a {
     color: white;
+   
     text-decoration: none;
     margin-top: 20px;
     margin: 10px 0px;
-    border: white 1px solid;
+   /* border: white 0.5px solid;*/
     border-radius: 5px;
     padding: 10px;
 }

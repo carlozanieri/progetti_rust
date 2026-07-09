@@ -11,6 +11,8 @@ use crate::components::dovemangiare::Dovemangiare;
 
 //use components::blog::Blog;
 use components::home::Home;
+use components::hero::Hero;
+
 use crate::components::prenotazioni::Prenotazioni;
 use crate::components::linkutili::Linkutili;
 #[derive(Debug, Clone, Routable, PartialEq)]

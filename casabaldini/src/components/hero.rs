@@ -4,21 +4,25 @@ use crate::components::linkutili::Linkutili;
 #[component]
 
 pub fn Hero() -> Element {
-    const HEADER_SVG: Asset = asset!("/assets/img/index/cafaggiolo.jpg");
+    const HEADER_SVG: Asset = asset!("/assets/img/index/fronte.jpg");
+    const logo_SVG: Asset = asset!("/assets/logo.jpg");
     rsx! {
-        div {
-            id: "hero",
-            img { src: HEADER_SVG, id: "header" }
-            div { id: "links",
-                a { href: "https://dioxuslabs.com/learn/0.7/", "📚 Learn Dioxus" }
-                a { href: "https://dioxuslabs.com/awesome", "🚀 Awesome Dioxus" }
-                a { href: "https://github.com/dioxus-community/", "📡 Community Libraries" }
-                a { href: "https://github.com/DioxusLabs/sdk", "⚙️ Dioxus Development Kit" }
-                a { href: "https://marketplace.visualstudio.com/items?itemName=DioxusLabs.dioxus", "💫 VSCode Extension" }
-                a { href: "https://discord.gg/XgGxMSkvUM", "👋 Community Discord" }
+        div { id: "hero",
+            div { id: "links", style: " align-items:center;",
+                a { href: "/casabaldini/index",
+                    img {
+                        src: logo_SVG,
+                        style: "width: 70%; height: auto;  margin-left: 20%; margin-right: 10%;",
+                    }
+                }
             
             }
-            
+            img {
+                src: HEADER_SVG,
+                id: "header",
+                style: "width: 50%; height: auto;",
+            }
+        
         }
     }
 }

@@ -3,7 +3,7 @@ pub use crate::models::get_sliders_db;
 use crate::components::linkutili::Linkutili;
 use crate::components::elencosliders::ElencoSliders;
 pub const BACK_IMG: Asset = asset!("/assets/bgblack.png");
-
+use crate::components::hero::Hero;
 #[component]
 pub fn Casabaldini(dir: String) -> Element {
     println!("--- ESECUZIONE COMPONENTE ---");

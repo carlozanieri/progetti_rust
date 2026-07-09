@@ -1,0 +1,27 @@
+{
+	"rust-analyzer.linkedProjects": [
+		{
+			"sysroot": "",
+			"crates": [
+				{
+					"root_module": "stefanocatani/target/debug/build/thiserror-2d968b5c7ad9a1bf/out/private.rs",
+					"display_name": "stefanocatani_target_debug_build_thiserror-2d968b5c7ad9a1bf_out_private",
+					"edition": "2021",
+					"deps": []
+				},
+				{
+					"root_module": "stefanocatani/target/debug/build/serde_core-fe94a5a69bb0db93/out/private.rs",
+					"display_name": "stefanocatani_target_debug_build_serde_core-fe94a5a69bb0db93_out_private",
+					"edition": "2021",
+					"deps": []
+				},
+				{
+					"root_module": "stefanocatani/target/debug/build/mime_guess-989d9dc208dac15e/out/mime_types_generated.rs",
+					"display_name": "stefanocatani_target_debug_build_mime_guess-989d9dc208dac15e_out_mime_types_generated",
+					"edition": "2021",
+					"deps": []
+				}
+			]
+		}
+	]
+}
