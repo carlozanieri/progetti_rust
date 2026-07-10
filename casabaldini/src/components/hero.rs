@@ -12,7 +12,7 @@ pub fn Hero() -> Element {
                 a { href: "/casabaldini/index",
                     img {
                         src: logo_SVG,
-                        style: "width: 65%; height: auto;  margin-left: 20%; ",
+                        style: "width: 70%; height: auto;  margin-left: 18%; ",
                     }
                 }
             
