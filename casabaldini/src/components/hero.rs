@@ -23,11 +23,14 @@ pub fn Hero() -> Element {
                 style: "width: 85%; height: auto;",
             }
 
+            span { style: "font-size: 1.5em; color: #fffefe;", "Barberino di Mugello" }
+            span { style: "font-size: 1em; color: #fffefe;", "2,5 Km. dall'uscita dell'Autostrada A1 " }
+            span { style: "font-size: 1em; color: #fffefe;", "a pochi Km. da Firenze " }
             span { style: "font-size: 1.5em; color: #fffefe;",
-                "Barberino di Mugello a 2,5 Km. dall'uscita dell'Autostrada A1, a pochi Km. da Firenze "
-            
+
+                b { "______________________________________________________" }
             }
-            span { style: "font-size: 1.5em; color: #fffefe;",
+            span { style: "font-size: 1em; color: #fffefe;",
 
                 b { "  Per informazioni e prenotazioni telefona al +39 3207060411" }
             }
